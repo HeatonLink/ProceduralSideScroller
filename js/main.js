@@ -23,5 +23,14 @@
     }
   });
 
+  // Click outside the canvas pauses if playing
+  document.body.addEventListener("click", e => {
+    if (e.target === canvas) return;
+    if (G.state === "play") {
+      G.state = "pause";
+      G.pauseIndex = 0;
+    }
+  });
+
   G.loop();
 })(G);
