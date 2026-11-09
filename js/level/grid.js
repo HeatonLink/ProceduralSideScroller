@@ -11,8 +11,8 @@
     { name: "ruins", color: "#8d6e63", ground: "#5d4037" }
   ];
 
-  G.LOAD_RADIUS = 2; // keep cells within this Chebyshev distance
-  G.gridLevels = Object.create(null); // only loaded cells
+  G.LOAD_RADIUS = 2;
+  G.gridLevels = Object.create(null);
   G.currentGX = 0;
   G.currentGY = 0;
 
@@ -38,6 +38,11 @@
       { x: 500, y: 600, got: false },
       { x: 800, y: 680, got: false }
     ];
+    // Pit traps on some cells
+    const pits = [];
+    if ((gx + gy) % 3 === 0) {
+      pits.push({ x: 400 + (Math.abs(gx) * 30 % 100), w: 80, platformIndex: 0, open: false });
+    }
     return {
       id: gx + "," + gy,
       gx: gx,
@@ -47,6 +52,7 @@
       h: G.STAGE_H,
       platforms: platforms,
       coins: coins,
+      pits: pits,
       color: theme.color,
       ground: theme.ground
     };
@@ -68,9 +74,9 @@
     const key = gx + "," + gy;
     const lvl = G.gridLevels[key];
     if (!lvl) return;
-    // Drop references so GC can free them
     lvl.platforms = null;
     lvl.coins = null;
+    lvl.pits = null;
     delete G.gridLevels[key];
   };
 
@@ -103,17 +109,15 @@
     if (!lvl) return;
     G.platforms = lvl.platforms;
     G.coins = lvl.coins;
+    G.pits = lvl.pits || [];
     G.stageW = lvl.w;
     G.stageH = lvl.h;
-    // Keep G.levels short: only the currently loaded cells
     G.levels = Object.keys(G.gridLevels).map(k => G.gridLevels[k]);
     G.currentLevel = G.levels.indexOf(lvl);
   };
 
-  // Start at origin with a small window loaded
   G.loadGrid(0, 0);
 
-  // Transition when player leaves the current grid cell
   G.addUpdate(function () {
     const p = G.player;
     if (!p || G.state !== "play") return;
@@ -132,6 +136,7 @@
       p.y = G.STAGE_H - 40;
       changed = true;
     } else if (p.y > G.STAGE_H - 10) {
+      // Falling through a pit drops to the cell below
       G.loadGrid(G.currentGX, G.currentGY + 1);
       p.y = 40;
       changed = true;
