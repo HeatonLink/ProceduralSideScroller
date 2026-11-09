@@ -37,12 +37,15 @@
     return {
       score: G.score || 0,
       level: G.currentLevel || 0,
+      gx: G.currentGX || 0,
+      gy: G.currentGY || 0,
       x: p.x || 80,
       y: p.y || 500,
       hp: p.hp || G.MAX_HP,
       facing: p.facing || 1,
       coins: (G.coins || []).map(c => !!c.got),
       enemies: (G.enemies || []).map(e => ({ hp: e.hp, x: e.x })),
+      flags: G.flags || {},
       updated: Date.now()
     };
   }
@@ -50,7 +53,9 @@
   G.applySnapshot = function (data) {
     if (!data) return;
     G.score = data.score || 0;
-    if (G.loadLevel) G.loadLevel(data.level || 0);
+    G.flags = data.flags || {};
+    if (G.loadGrid) G.loadGrid(data.gx || 0, data.gy || 0);
+    else if (G.loadLevel) G.loadLevel(data.level || 0);
     const p = G.player || G.makePlayer();
     p.x = data.x || 80;
     p.y = data.y || 500;
@@ -65,6 +70,7 @@
       G.enemies[i].hp = e.hp;
       G.enemies[i].x = e.x;
     });
+    if (G.spawnNpcs) G.spawnNpcs();
   };
 
   G.saveRun = function () {
@@ -92,6 +98,7 @@
     if (!id) return 0;
     G.activeSave = id;
     G.score = 0;
+    G.flags = {};
     G.player = null;
     G.saveRun();
     return id;
