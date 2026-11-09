@@ -3,6 +3,8 @@
   G.PLAY_H = 540;
   G.UI_BAND = 150;
   G.H = G.PLAY_H + G.UI_BAND;
+  G.STAGE_W = 1000;
+  G.STAGE_H = 1000;
   G.GRAVITY = 0.55;
   G.JUMP = -14;
   G.SPEED = 4.2;
