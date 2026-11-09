@@ -1,8 +1,8 @@
 (function (G) {
   G.enemies = [
-    { x: 700, y: 400, vx: 1.2, w: 32, h: 64, hp: 40, dir: 1, range: 120, home: 700, anim: 0, rig: G.makeHuman(0.85), state: "walk" },
-    { x: 1400, y: 340, vx: 1.5, w: 32, h: 64, hp: 50, dir: 1, range: 100, home: 1400, anim: 0, rig: G.makeHuman(0.9), state: "walk" },
-    { x: 1900, y: 500, vx: 1, w: 32, h: 64, hp: 30, dir: -1, range: 150, home: 1900, anim: 0, rig: G.makeHuman(0.8), state: "walk" }
+    { x: 700, y: 400, vx: 1.2, w: 32, h: 64, hp: 40, dir: 1, range: 120, home: 700, anim: 0, rig: G.makeRig("enemy", 0.85), state: "walk" },
+    { x: 1400, y: 340, vx: 1.5, w: 32, h: 64, hp: 50, dir: 1, range: 100, home: 1400, anim: 0, rig: G.makeRig("enemy", 0.9), state: "walk" },
+    { x: 1900, y: 500, vx: 1, w: 32, h: 64, hp: 30, dir: -1, range: 150, home: 1900, anim: 0, rig: G.makeRig("enemy", 0.8), state: "walk" }
   ];
 
   G.updateEnemies = function () {
