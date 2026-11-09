@@ -1,5 +1,5 @@
 (function (G) {
-  G.enemies = [];
+  G.enemies = G.enemies || [];
 
   G.addEnemy = function (e) { G.enemies.push(e); };
 
@@ -22,19 +22,22 @@
     }
   };
 
-  G.drawEnemies = function (ctx) {
+  G.addDraw("enemies", function (ctx) {
+    ctx.save();
+    ctx.translate(-G.camX, 0);
     for (const e of G.enemies) {
       if (e.hp <= 0) continue;
       G.drawBone(ctx, e.rig.root, "#e74c3c");
       const h = e.rig.head;
-      const hx = h.x + Math.cos(h.ang * Math.PI/180) * h.len;
-      const hy = h.y + Math.sin(h.ang * Math.PI/180) * h.len;
+      const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
+      const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
       ctx.fillStyle = "#f5b7b1";
       ctx.beginPath();
       ctx.arc(hx, hy - 6, 10, 0, Math.PI * 2);
       ctx.fill();
     }
-  };
+    ctx.restore();
+  });
 
   G.hitEnemies = function (px, py, facing) {
     const box = { x: px + (facing > 0 ? 20 : -40), y: py + 10, w: 50, h: 40 };
@@ -43,9 +46,11 @@
       if (G.overlap(box, { x: e.x, y: e.y, w: e.w, h: e.h })) {
         e.hp -= 15;
         e.x += facing * 12;
-        for (let i = 0; i < 8; i++) G.addParticle(e.x + 16, e.y + 20, (Math.random()-0.5)*6, -3, 25, "#ff5555", 4);
+        for (let i = 0; i < 8; i++) G.addParticle(e.x + 16, e.y + 20, (Math.random() - 0.5) * 6, -3, 25, "#ff5555", 4);
         if (e.hp <= 0) G.score += 50;
       }
     }
   };
+
+  G.addUpdate(function () { G.updateEnemies(); });
 })(G);
