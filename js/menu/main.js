@@ -1,6 +1,7 @@
 (function (G) {
   G.MENU = [
     { id: "play", label: "Play" },
+    { id: "saves", label: "Saves" },
     { id: "character", label: "Character" },
     { id: "options", label: "Options" },
     { id: "achievements", label: "Achievements" },
@@ -10,7 +11,7 @@
   G.subState = null;
 
   G.menuButtons = function () {
-    const bw = 280, bh = 44, gap = 10, startY = 280;
+    const bw = 280, bh = 44, gap = 10, startY = 240;
     return G.MENU.map((item, i) => ({
       ...item,
       x: (G.W - bw) / 2,
@@ -26,9 +27,9 @@
     ctx.textAlign = "center";
     ctx.fillStyle = "#f4f7ff";
     ctx.font = "bold 56px system-ui, sans-serif";
-    ctx.fillText("Procedural", G.W / 2, 120);
+    ctx.fillText("Procedural", G.W / 2, 100);
     ctx.font = "bold 36px system-ui, sans-serif";
-    ctx.fillText("Side Scroller", G.W / 2, 170);
+    ctx.fillText("Side Scroller", G.W / 2, 150);
 
     G.menuButtons().forEach((b, i) => {
       const on = i === G.menuIndex;
@@ -52,11 +53,13 @@
   G.confirmMenu = function () {
     const id = G.MENU[G.menuIndex].id;
     if (id === "play") G.startGame();
+    else if (id === "saves") { G.subState = "saves"; G.saveIndex = 0; }
     else G.subState = id;
   };
 
   G.drawSub = function (ctx) {
     if (!G.subState) return;
+    if (G.subState === "saves") { G.drawSaves(ctx); return; }
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, G.W, G.H);
     ctx.fillStyle = "#fff";
