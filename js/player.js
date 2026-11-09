@@ -60,28 +60,28 @@
   G.animate = function (p) {
     const r = p.rig;
     const t = p.anim * 0.15;
-    const f = p.facing;
-    // reset
+    // base standing: thighs down (~90), slight stance
     r.torso.ang = -90 + Math.sin(t * 2) * 2;
     r.head.ang = 0;
     r.lArm.ang = 20; r.lFore.ang = 10;
     r.rArm.ang = -20; r.rFore.ang = -10;
-    r.lThigh.ang = 10; r.lShin.ang = 5;
-    r.rThigh.ang = -10; r.rShin.ang = -5;
+    r.lThigh.ang = 85; r.lShin.ang = 8;
+    r.rThigh.ang = 95; r.rShin.ang = -6;
 
     if (p.state === "walk") {
       const s = Math.sin(t * 8);
-      r.lThigh.ang = 30 * s; r.lShin.ang = Math.max(0, -20 * s);
-      r.rThigh.ang = -30 * s; r.rShin.ang = Math.max(0, 20 * s);
-      r.lArm.ang = -25 * s; r.rArm.ang = 25 * s;
+      r.lThigh.ang = 90 + 28 * s; r.lShin.ang = Math.max(0, 12 - 15 * s);
+      r.rThigh.ang = 90 - 28 * s; r.rShin.ang = Math.max(0, 12 + 15 * s);
+      r.lArm.ang = -22 * s; r.rArm.ang = 22 * s;
       r.torso.ang = -90 + s * 4;
     } else if (p.state === "jump") {
       r.lArm.ang = -40; r.rArm.ang = -40;
-      r.lThigh.ang = 20; r.rThigh.ang = -20;
-      r.lShin.ang = 30; r.rShin.ang = 30;
+      r.lThigh.ang = 70; r.rThigh.ang = 110;
+      r.lShin.ang = 40; r.rShin.ang = 35;
     } else if (p.state === "fall") {
-      r.lArm.ang = 30; r.rArm.ang = 30;
-      r.lThigh.ang = 10; r.rThigh.ang = -10;
+      r.lArm.ang = 25; r.rArm.ang = 25;
+      r.lThigh.ang = 80; r.rThigh.ang = 100;
+      r.lShin.ang = 15; r.rShin.ang = 10;
     } else if (p.state === "attack") {
       const a = 1 - p.attack / 18;
       r.rArm.ang = -20 - 90 * a;
@@ -93,7 +93,6 @@
   G.drawPlayer = function (ctx, p) {
     const col = p.attack > 0 ? "#ffcc44" : "#4a90d9";
     G.drawBone(ctx, p.rig.root, col);
-    // head circle
     const h = p.rig.head;
     const hx = h.x + Math.cos(h.ang * Math.PI/180) * h.len;
     const hy = h.y + Math.sin(h.ang * Math.PI/180) * h.len;
