@@ -21,16 +21,12 @@
   G.addDraw("world", function (ctx) {
     ctx.save();
     ctx.translate(-G.camX, 0);
-    ctx.fillStyle = "#5d4037";
     for (const p of (G.platforms || [])) {
-      if (p.y >= 700) continue;
+      ctx.fillStyle = "#5d4037";
       ctx.fillRect(p.x, p.y, p.w, p.h);
       ctx.fillStyle = "#4caf50";
       ctx.fillRect(p.x, p.y, p.w, 8);
-      ctx.fillStyle = "#5d4037";
     }
-    ctx.fillStyle = "#3e2723";
-    ctx.fillRect(0, 720, 4000, 100);
     ctx.restore();
   });
 
