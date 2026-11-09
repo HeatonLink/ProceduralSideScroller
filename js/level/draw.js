@@ -1,30 +1,24 @@
 (function (G) {
   G.addDraw("bg", function (ctx) {
+    const theme = G.gridLevels && G.gridLevels[G.currentGX + "," + G.currentGY];
+    const top = theme ? theme.color : "#87ceeb";
     const g = ctx.createLinearGradient(0, 0, 0, G.H);
-    g.addColorStop(0, "#87ceeb");
+    g.addColorStop(0, top);
     g.addColorStop(1, "#e0f6ff");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, G.W, G.H);
-
-    ctx.fillStyle = "#a8d5a2";
-    ctx.beginPath();
-    ctx.moveTo(0, 500);
-    for (let x = 0; x <= G.W; x += 40) {
-      const wx = x + G.camX * 0.3;
-      ctx.lineTo(x, 480 + Math.sin(wx * 0.01) * 30);
-    }
-    ctx.lineTo(G.W, G.H);
-    ctx.lineTo(0, G.H);
-    ctx.fill();
   });
 
   G.addDraw("world", function (ctx) {
     ctx.save();
     ctx.translate(-G.camX, 0);
+    const theme = G.gridLevels && G.gridLevels[G.currentGX + "," + G.currentGY];
+    const ground = theme ? theme.ground : "#5d4037";
+    const top = theme ? theme.color : "#4caf50";
     for (const p of (G.platforms || [])) {
-      ctx.fillStyle = "#5d4037";
+      ctx.fillStyle = ground;
       ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.fillStyle = "#4caf50";
+      ctx.fillStyle = top;
       ctx.fillRect(p.x, p.y, p.w, 8);
     }
     ctx.restore();
@@ -44,6 +38,18 @@
       ctx.stroke();
     }
     ctx.restore();
+  });
+
+  G.addDraw("fx", function (ctx) {
+    // Grid label so it's easy to see which cell the character is in
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(8, 8, 160, 28);
+    ctx.fillStyle = "#fff";
+    ctx.font = "16px system-ui, sans-serif";
+    ctx.textAlign = "left";
+    const theme = G.gridLevels && G.gridLevels[G.currentGX + "," + G.currentGY];
+    const name = theme ? theme.theme : "";
+    ctx.fillText("Grid " + (G.currentGX || 0) + "," + (G.currentGY || 0) + "  " + name, 16, 28);
   });
 
   G.drawAll = function (ctx, player) {
