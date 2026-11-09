@@ -5,13 +5,18 @@
   G.canvas = null;
   G.ctx = null;
 
-  G.startGame = function () {
-    G.player = G.makePlayer();
-    G.score = 0;
+  G.startGame = function (fromSave) {
+    if (!fromSave) {
+      G.player = G.makePlayer();
+      G.score = 0;
+      if (G.loadLevel) G.loadLevel(0);
+      for (const e of (G.enemies || [])) { e.hp = e.hp || 40; e.x = e.home; }
+      if (!G.activeSave) G.createSave();
+    } else if (!G.player) {
+      G.player = G.makePlayer();
+    }
     G.camX = 0;
     G.particles = [];
-    for (const c of (G.coins || [])) c.got = false;
-    for (const e of (G.enemies || [])) { e.hp = e.hp || 40; e.x = e.home; }
     G.state = "play";
     G.subState = null;
     document.getElementById("hud").classList.remove("hidden");
@@ -20,6 +25,7 @@
 
   G.update = function () {
     if (G.state === "menu") {
+      if (G.subState === "saves") { G.handleSaves(); return; }
       if (G.justPressed("ArrowDown") || G.justPressed("KeyS")) G.menuIndex = (G.menuIndex + 1) % G.MENU.length;
       if (G.justPressed("ArrowUp") || G.justPressed("KeyW")) G.menuIndex = (G.menuIndex - 1 + G.MENU.length) % G.MENU.length;
       if (G.justPressed("Enter") || G.justPressed("Space")) G.confirmMenu();
@@ -34,11 +40,10 @@
       return;
     }
     if (G.state !== "play") return;
-    if (G.justPressed("Escape")) { G.state = "pause"; G.pauseIndex = 0; return; }
+    if (G.justPressed("Escape")) { G.saveRun(); G.state = "pause"; G.pauseIndex = 0; return; }
 
     for (const fn of (G.updates || [])) fn();
 
-    // coins + contact (can later become registered updates too)
     const p = G.player;
     if (!p) return;
     for (const c of (G.coins || [])) {
