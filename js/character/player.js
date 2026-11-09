@@ -89,15 +89,23 @@
     G.pose(r.root, p.x + 18, p.y + 20, 0);
   };
 
-  G.drawPlayer = function (ctx, p) {
-    const col = p.attack > 0 ? "#ffcc44" : "#4a90d9";
-    G.drawBone(ctx, p.rig.root, col);
-    const h = p.rig.head;
-    const hx = h.x + Math.cos(h.ang * Math.PI/180) * h.len;
-    const hy = h.y + Math.sin(h.ang * Math.PI/180) * h.len;
+  G.addDraw("player", function (ctx, player) {
+    if (!player) return;
+    ctx.save();
+    ctx.translate(-G.camX, 0);
+    const col = player.attack > 0 ? "#ffcc44" : "#4a90d9";
+    G.drawBone(ctx, player.rig.root, col);
+    const h = player.rig.head;
+    const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
+    const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
     ctx.fillStyle = "#f5d7b5";
     ctx.beginPath();
     ctx.arc(hx, hy - 8, 12, 0, Math.PI * 2);
     ctx.fill();
-  };
+    ctx.restore();
+  });
+
+  G.addUpdate(function () {
+    if (G.player && G.state === "play") G.updatePlayer(G.player, 1);
+  });
 })(G);
