@@ -13,11 +13,19 @@
     for (const c of G.coins) c.got = false;
     for (const e of G.enemies) { e.hp = 40; e.x = e.home; }
     G.state = "play";
-    document.getElementById("menu").classList.add("hidden");
+    G.subState = null;
+    document.getElementById("hud").classList.remove("hidden");
     document.getElementById("dead").classList.add("hidden");
   };
 
   G.update = function () {
+    if (G.state === "menu") {
+      if (G.justPressed("ArrowDown") || G.justPressed("KeyS")) G.menuIndex = (G.menuIndex + 1) % G.MENU.length;
+      if (G.justPressed("ArrowUp") || G.justPressed("KeyW")) G.menuIndex = (G.menuIndex - 1 + G.MENU.length) % G.MENU.length;
+      if (G.justPressed("Enter") || G.justPressed("Space")) G.confirmMenu();
+      if (G.subState && (G.justPressed("Escape") || G.justPressed("Backspace"))) G.subState = null;
+      return;
+    }
     if (G.state !== "play") return;
     const p = G.player;
     G.updatePlayer(p, 1);
@@ -25,7 +33,6 @@
     G.updateParticles();
     G.updateCamera(p.x);
 
-    // coins
     for (const c of G.coins) {
       if (!c.got && Math.abs(p.x + 18 - c.x) < 20 && Math.abs(p.y + 30 - c.y) < 30) {
         c.got = true;
@@ -34,10 +41,8 @@
       }
     }
 
-    // attack hit
     if (p.attack > 12) G.hitEnemies(p.x, p.y, p.facing);
 
-    // enemy contact damage
     for (const e of G.enemies) {
       if (e.hp <= 0) continue;
       if (G.overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: e.x, y: e.y, w: e.w, h: e.h })) {
@@ -57,7 +62,12 @@
     G.update();
     if (G.ctx) {
       G.ctx.clearRect(0, 0, G.W, G.H);
-      if (G.state === "play" || G.state === "dead") G.drawAll(G.ctx, G.player);
+      if (G.state === "menu") {
+        G.drawMenu(G.ctx);
+        G.drawSub(G.ctx);
+      } else if (G.state === "play" || G.state === "dead") {
+        G.drawAll(G.ctx, G.player);
+      }
     }
     requestAnimationFrame(G.loop);
   };
