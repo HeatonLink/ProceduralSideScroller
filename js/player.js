@@ -1,6 +1,6 @@
 (function (G) {
   G.makePlayer = function () {
-    const rig = G.makeHuman(1);
+    const rig = G.makeRig("player", 1);
     return {
       x: 80, y: 500, vx: 0, vy: 0, w: 36, h: 72,
       hp: G.MAX_HP, facing: 1, grounded: false,
