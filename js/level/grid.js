@@ -1,5 +1,4 @@
 (function (G) {
-  // Grid of stages. Only a small window around the player is kept in memory.
   G.THEMES = [
     { name: "forest", color: "#4caf50", ground: "#3e2723" },
     { name: "cave", color: "#5d4037", ground: "#3e2723" },
@@ -38,10 +37,14 @@
       { x: 500, y: 600, got: false },
       { x: 800, y: 680, got: false }
     ];
-    // Pit traps on some cells
     const pits = [];
     if ((gx + gy) % 3 === 0) {
       pits.push({ x: 400 + (Math.abs(gx) * 30 % 100), w: 80, platformIndex: 0, open: false });
+    }
+    const springs = [];
+    if ((gx + gy) % 2 === 0) {
+      springs.push({ x: 300 + (Math.abs(gy) * 40 % 120), y: 884, w: 40, h: 16, anim: 0 });
+      springs.push({ x: 650, y: 676, w: 40, h: 16, anim: 0 });
     }
     return {
       id: gx + "," + gy,
@@ -53,6 +56,7 @@
       platforms: platforms,
       coins: coins,
       pits: pits,
+      springs: springs,
       color: theme.color,
       ground: theme.ground
     };
@@ -77,6 +81,7 @@
     lvl.platforms = null;
     lvl.coins = null;
     lvl.pits = null;
+    lvl.springs = null;
     delete G.gridLevels[key];
   };
 
@@ -110,6 +115,7 @@
     G.platforms = lvl.platforms;
     G.coins = lvl.coins;
     G.pits = lvl.pits || [];
+    G.springs = lvl.springs || [];
     G.stageW = lvl.w;
     G.stageH = lvl.h;
     G.levels = Object.keys(G.gridLevels).map(k => G.gridLevels[k]);
@@ -136,7 +142,6 @@
       p.y = G.STAGE_H - 40;
       changed = true;
     } else if (p.y > G.STAGE_H - 10) {
-      // Falling through a pit drops to the cell below
       G.loadGrid(G.currentGX, G.currentGY + 1);
       p.y = 40;
       changed = true;
