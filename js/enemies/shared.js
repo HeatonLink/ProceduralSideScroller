@@ -1,7 +1,12 @@
 (function (G) {
   G.enemies = G.enemies || [];
 
-  G.addEnemy = function (e) { G.enemies.push(e); };
+  G.addEnemy = function (def) {
+    const e = Object.assign({}, G.ENEMY_DEFAULT, def);
+    if (!e.rig && G.makeRig) e.rig = G.makeRig("enemy", e.scale);
+    if (e.home === 0) e.home = e.x;
+    G.enemies.push(e);
+  };
 
   G.updateEnemies = function () {
     for (const e of G.enemies) {
@@ -27,7 +32,7 @@
     ctx.translate(-G.camX, 0);
     for (const e of G.enemies) {
       if (e.hp <= 0) continue;
-      G.drawBone(ctx, e.rig.root, "#e74c3c");
+      G.drawBone(ctx, e.rig.root, e.color || "#e74c3c");
       const h = e.rig.head;
       const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
       const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
