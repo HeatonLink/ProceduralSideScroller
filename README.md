@@ -18,5 +18,18 @@ Open `index.html` in a browser.
 - Patrol enemies
 - Particles, camera follow, health, score
 - Clean modular JS
+- **Per-character rig folders** (`js/characters/`) that default to the built-in humanoid if the file is empty or missing a custom maker
+
+## Custom character rigs
+Put overrides in `js/characters/<name>.js` (loaded after `js/rig.js`).  
+Example (player):
+```js
+G.rigMakers.player = function (scale) {
+  const rig = G.makeHuman(scale);
+  // tweak or rebuild the bone tree
+  return rig;
+};
+```
+If no `G.rigMakers[name]` is set, `G.makeRig(name, scale)` falls back to `G.makeHuman`.
 
 Inspired by [BonkySideScroller](https://github.com/HeatonLink/BonkySideScroller).
