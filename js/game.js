@@ -10,8 +10,8 @@
     G.score = 0;
     G.camX = 0;
     G.particles = [];
-    for (const c of G.coins) c.got = false;
-    for (const e of G.enemies) { e.hp = 40; e.x = e.home; }
+    for (const c of (G.coins || [])) c.got = false;
+    for (const e of (G.enemies || [])) { e.hp = e.hp || 40; e.x = e.home; }
     G.state = "play";
     G.subState = null;
     document.getElementById("hud").classList.remove("hidden");
@@ -36,23 +36,20 @@
     if (G.state !== "play") return;
     if (G.justPressed("Escape")) { G.state = "pause"; G.pauseIndex = 0; return; }
 
-    const p = G.player;
-    G.updatePlayer(p, 1);
-    G.updateEnemies();
-    G.updateParticles();
-    G.updateCamera(p.x);
+    for (const fn of (G.updates || [])) fn();
 
-    for (const c of G.coins) {
+    // coins + contact (can later become registered updates too)
+    const p = G.player;
+    if (!p) return;
+    for (const c of (G.coins || [])) {
       if (!c.got && Math.abs(p.x + 18 - c.x) < 20 && Math.abs(p.y + 30 - c.y) < 30) {
         c.got = true;
         G.score += 10;
         G.addParticle(c.x, c.y, 0, -2, 30, "#ffd700", 5);
       }
     }
-
     if (p.attack > 12) G.hitEnemies(p.x, p.y, p.facing);
-
-    for (const e of G.enemies) {
+    for (const e of (G.enemies || [])) {
       if (e.hp <= 0) continue;
       if (G.overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: e.x, y: e.y, w: e.w, h: e.h })) {
         p.hp -= 0.5;
@@ -62,7 +59,8 @@
         }
       }
     }
-
+    G.updateCamera(p.x);
+    G.updateParticles();
     document.getElementById("hp").textContent = Math.max(0, Math.floor(p.hp));
     document.getElementById("score").textContent = G.score;
   };
