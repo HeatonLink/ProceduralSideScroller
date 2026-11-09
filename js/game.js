@@ -26,7 +26,16 @@
       if (G.subState && (G.justPressed("Escape") || G.justPressed("Backspace"))) G.subState = null;
       return;
     }
+    if (G.state === "pause") {
+      if (G.justPressed("ArrowDown") || G.justPressed("KeyS")) G.pauseIndex = (G.pauseIndex + 1) % G.PAUSE.length;
+      if (G.justPressed("ArrowUp") || G.justPressed("KeyW")) G.pauseIndex = (G.pauseIndex - 1 + G.PAUSE.length) % G.PAUSE.length;
+      if (G.justPressed("Enter") || G.justPressed("Space")) G.confirmPause();
+      if (G.justPressed("Escape")) G.state = "play";
+      return;
+    }
     if (G.state !== "play") return;
+    if (G.justPressed("Escape")) { G.state = "pause"; G.pauseIndex = 0; return; }
+
     const p = G.player;
     G.updatePlayer(p, 1);
     G.updateEnemies();
@@ -65,8 +74,9 @@
       if (G.state === "menu") {
         G.drawMenu(G.ctx);
         G.drawSub(G.ctx);
-      } else if (G.state === "play" || G.state === "dead") {
+      } else if (G.state === "play" || G.state === "dead" || G.state === "pause") {
         G.drawAll(G.ctx, G.player);
+        if (G.state === "pause") G.drawPause(G.ctx);
       }
     }
     requestAnimationFrame(G.loop);
