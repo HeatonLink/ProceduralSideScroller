@@ -10,6 +10,7 @@ Open `index.html` in a browser.
 - A / D or Left / Right: move
 - Space or Up: jump (coyote time + jump buffer)
 - J: attack
+- Menu: Up/Down or click, Enter to confirm
 
 ## Features
 - Procedural character and enemy rigs
@@ -19,6 +20,7 @@ Open `index.html` in a browser.
 - Particles, camera follow, health, score
 - Clean modular JS
 - **Per-character rig folders** (`js/characters/`) that default to the built-in humanoid if the file is empty or missing a custom maker
+- **Main menu** on startup with Play, Character, Options, Achievements, How to Play (same buttons as BonkySideScroller)
 
 ## Custom character rigs
 Put overrides in `js/characters/<name>.js` (loaded after `js/rig.js`).  
