@@ -49,6 +49,7 @@
     if (id === "resume") G.state = "play";
     else if (id === "options") G.subState = "options";
     else if (id === "quit") {
+      G.saveRun();
       G.state = "menu";
       document.getElementById("hud").classList.add("hidden");
     }
