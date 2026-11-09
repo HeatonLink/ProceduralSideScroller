@@ -34,7 +34,7 @@
     for (const c of bone.children) G.drawBone(ctx, c, color);
   };
 
-  // Build a humanoid rig
+  // Build a humanoid rig (default)
   G.makeHuman = function (scale) {
     scale = scale || 1;
     const root = new G.Bone(0, 0);
@@ -49,5 +49,12 @@
     const rThigh = root.add(new G.Bone(24 * scale, 9 * scale));
     const rShin = rThigh.add(new G.Bone(22 * scale, 7 * scale));
     return { root, torso, head, lArm, lFore, rArm, rFore, lThigh, lShin, rThigh, rShin };
+  };
+
+  // Registry for per-character rigs. Falls back to makeHuman if none registered.
+  G.rigMakers = Object.create(null);
+  G.makeRig = function (name, scale) {
+    const maker = G.rigMakers[name] || G.makeHuman;
+    return maker(scale);
   };
 })(G);
