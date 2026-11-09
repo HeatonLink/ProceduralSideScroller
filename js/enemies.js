@@ -14,11 +14,11 @@
       const gy = G.onGround(e.x, e.y, e.w, e.h);
       if (gy !== null) e.y = gy - e.h;
       else e.y += 2;
-      // simple walk anim
       const r = e.rig;
       const s = Math.sin(e.anim * 0.2);
-      r.lThigh.ang = 25 * s; r.rThigh.ang = -25 * s;
-      r.lArm.ang = -20 * s; r.rArm.ang = 20 * s;
+      r.lThigh.ang = 90 + 22 * s; r.rThigh.ang = 90 - 22 * s;
+      r.lShin.ang = Math.max(0, 10 - 8 * s); r.rShin.ang = Math.max(0, 10 + 8 * s);
+      r.lArm.ang = -18 * s; r.rArm.ang = 18 * s;
       r.torso.ang = -90;
       G.pose(r.root, e.x + 16, e.y + 18, 0);
     }
