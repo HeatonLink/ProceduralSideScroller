@@ -5,6 +5,7 @@
       x: 80, y: 500, vx: 0, vy: 0, w: 36, h: 72,
       hp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
+      surface: "normal",
       rig, state: "idle"
     };
   };
@@ -16,8 +17,11 @@
     const jump = G.justPressed("Space") || G.justPressed("ArrowUp");
     const atk = G.justPressed("KeyJ");
 
-    if (left) { p.vx = -G.SPEED; p.facing = -1; }
-    else if (right) { p.vx = G.SPEED; p.facing = 1; }
+    p.surface = G.surfaceAt ? G.surfaceAt(p.x, p.y, p.w, p.h) : "normal";
+    const speed = G.speedFor ? G.speedFor(p.surface) : G.SPEED;
+
+    if (left) { p.vx = -speed; p.facing = -1; }
+    else if (right) { p.vx = speed; p.facing = 1; }
     else p.vx *= G.FRICTION;
 
     if (jump) p.buffer = G.BUFFER;
