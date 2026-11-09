@@ -1,6 +1,5 @@
 (function (G) {
   G.levels = [];
-  G.addLevel = function (def) { G.levels.push(def); };
 
   // Default prototypes. Missing fields are filled from these.
   G.ENEMY_DEFAULT = {
