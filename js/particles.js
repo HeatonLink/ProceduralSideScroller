@@ -13,7 +13,10 @@
       if (p.life <= 0) G.particles.splice(i, 1);
     }
   };
-  G.drawParticles = function (ctx) {
+
+  G.addDraw("fx", function (ctx) {
+    ctx.save();
+    ctx.translate(-G.camX, 0);
     for (const p of G.particles) {
       ctx.globalAlpha = p.life / p.max;
       ctx.fillStyle = p.color;
@@ -22,5 +25,6 @@
       ctx.fill();
     }
     ctx.globalAlpha = 1;
-  };
+    ctx.restore();
+  });
 })(G);
