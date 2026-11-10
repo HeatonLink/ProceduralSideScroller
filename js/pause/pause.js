@@ -10,12 +10,17 @@
 
   G.pauseButtons = function () {
     const bw = 280, bh = 44, gap = 12, startY = 220;
+    const pad = gap / 2;
     return G.PAUSE.map((item, i) => ({
       ...item,
       x: (G.W - bw) / 2,
       y: startY + i * (bh + gap),
       w: bw,
-      h: bh
+      h: bh,
+      hitX: (G.W - bw) / 2 - pad,
+      hitY: startY + i * (bh + gap) - pad,
+      hitW: bw + pad * 2,
+      hitH: bh + pad * 2
     }));
   };
 
