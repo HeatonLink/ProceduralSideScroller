@@ -1,10 +1,15 @@
 (function (G) {
   G.enemies = G.enemies || [];
+  G.enemyId = G.enemyId || 1;
 
   G.addEnemy = function (def) {
     const e = Object.assign({}, G.ENEMY_DEFAULT, def);
     if (!e.rig && G.makeRig) e.rig = G.makeRig("enemy", e.scale);
     if (e.home === 0) e.home = e.x;
+    if (e.id == null) e.id = G.enemyId++;
+    e.gx = e.gx != null ? e.gx : G.currentGX;
+    e.gy = e.gy != null ? e.gy : G.currentGY;
+    if (G.applyEnemyState) G.applyEnemyState(e);
     G.enemies.push(e);
   };
 
@@ -52,7 +57,10 @@
         e.hp -= 15;
         e.x += facing * 12;
         for (let i = 0; i < 8; i++) G.addParticle(e.x + 16, e.y + 20, (Math.random() - 0.5) * 6, -3, 25, "#ff5555", 4);
-        if (e.hp <= 0) G.score += 50;
+        if (e.hp <= 0) {
+          G.score += 50;
+          if (G.recordEnemy) G.recordEnemy(e);
+        }
       }
     }
   };
