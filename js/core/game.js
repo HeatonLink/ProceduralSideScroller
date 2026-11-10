@@ -9,30 +9,25 @@
   G.startGame = function (fromSave) {
     if (G.loadGrid) G.loadGrid(0, 0);
     if (!fromSave) {
-      G.player = G.makePlayer();
       G.score = 0;
       G.inventory = {};
       G.visited = {};
       G.status = { burn: 0, freeze: 0, poison: 0, slow: 0, stun: 0, bleed: 0, shock: 0 };
       for (const e of (G.enemies || [])) { e.hp = e.maxHp || e.hp || 40; e.x = e.home; }
-      if (!G.activeSave) G.createSave();
-    } else if (!G.player) {
-      G.player = G.makePlayer();
+      if (!G.activeSave && G.createSave) G.createSave();
     }
+    // Always after createSave. createSave used to null the player.
+    if (!G.player) G.player = G.makePlayer();
     if (!G.platforms || !G.platforms.length) {
       G.platforms = [{ x: 0, y: G.FLOOR_Y || 480, w: 1000, h: 120 }];
     }
     const floor = G.FLOOR_Y || 480;
-    if (G.player) {
-      G.player.x = 80;
-      G.player.y = floor - (G.player.h || 48);
-      G.player.vx = 0;
-      G.player.vy = 0;
-    }
+    G.player.x = 80;
+    G.player.y = floor - (G.player.h || 48);
+    G.player.vx = 0;
+    G.player.vy = 0;
     G.particles = [];
-    G.camX = 0;
-    G.camY = Math.max(0, floor - G.PLAY_H + 80);
-    if (G.player && G.updateCamera) G.updateCamera(G.player.x, G.player.y, true);
+    if (G.updateCamera) G.updateCamera(G.player.x, G.player.y, true);
     G.state = "play";
     G.subState = null;
     document.getElementById("hud").classList.remove("hidden");
