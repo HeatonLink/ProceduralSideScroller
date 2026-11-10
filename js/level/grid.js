@@ -1,13 +1,13 @@
 (function (G) {
   G.THEMES = [
-    { name: "forest", color: "#4caf50", ground: "#3e2723" },
-    { name: "cave", color: "#5d4037", ground: "#3e2723" },
-    { name: "lava", color: "#e64a19", ground: "#4e342e" },
-    { name: "ice", color: "#81d4fa", ground: "#b0bec5" },
-    { name: "sky", color: "#29b6f6", ground: "#90caf9" },
-    { name: "desert", color: "#ffb74d", ground: "#8d6e63" },
-    { name: "ocean", color: "#0288d1", ground: "#01579b" },
-    { name: "ruins", color: "#8d6e63", ground: "#5d4037" }
+    { name: "forest", color: "#4caf50", ground: "#3e2723", dust: "#a1887f" },
+    { name: "cave", color: "#5d4037", ground: "#3e2723", dust: "#9e9e9e" },
+    { name: "lava", color: "#e64a19", ground: "#4e342e", dust: "#ff7043" },
+    { name: "ice", color: "#81d4fa", ground: "#b0bec5", dust: "#e1f5fe" },
+    { name: "sky", color: "#29b6f6", ground: "#90caf9", dust: "#b3e5fc" },
+    { name: "desert", color: "#ffb74d", ground: "#8d6e63", dust: "#ffe0b2" },
+    { name: "ocean", color: "#0288d1", ground: "#01579b", dust: "#80deea" },
+    { name: "ruins", color: "#8d6e63", ground: "#5d4037", dust: "#bcaaa4" }
   ];
 
   G.LOAD_RADIUS = 2;
@@ -25,13 +25,15 @@
   G.makeGridLevel = function (gx, gy) {
     const theme = G.themeFor(gx, gy);
     const fy = G.FLOOR_Y;
-    const platforms = [{ x: 0, y: fy, w: 1000, h: 120 }];
+    const dust = theme.dust || "#a1887f";
+    const platforms = [{ x: 0, y: fy, w: 1000, h: 120, dust: dust }];
     for (let i = 0; i < 3; i++) {
       platforms.push({
         x: 150 + i * 250 + (Math.abs(gx) * 20 % 80),
         y: fy - 140 - i * 70,
         w: 140,
-        h: 24
+        h: 24,
+        dust: dust
       });
     }
     const coins = [];
@@ -79,7 +81,8 @@
       surfaces: surfaces,
       powerups: powerups,
       color: theme.color,
-      ground: theme.ground
+      ground: theme.ground,
+      dust: dust
     };
   };
 
@@ -137,6 +140,7 @@
     const lvl = G.gridLevels[gx + "," + gy];
     if (!lvl) return;
     G.platforms = lvl.platforms;
+    if (G.fillDust) G.fillDust(G.platforms);
     G.coins = lvl.coins;
     G.pits = lvl.pits || [];
     G.springs = lvl.springs || [];
