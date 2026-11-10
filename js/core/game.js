@@ -9,7 +9,10 @@
     if (!fromSave) {
       G.player = G.makePlayer();
       G.score = 0;
-      if (G.loadLevel) G.loadLevel(0);
+      G.inventory = {};
+      G.visited = {};
+      if (G.loadGrid) G.loadGrid(0, 0);
+      else if (G.loadLevel) G.loadLevel(0);
       for (const e of (G.enemies || [])) { e.hp = e.hp || 40; e.x = e.home; }
       if (!G.activeSave) G.createSave();
     } else if (!G.player) {
@@ -33,6 +36,10 @@
       return;
     }
     if (G.state === "pause") {
+      if (G.subState) {
+        if (G.justPressed("Escape") || G.justPressed("Backspace")) G.subState = null;
+        return;
+      }
       if (G.justPressed("ArrowDown") || G.justPressed("KeyS")) G.pauseIndex = (G.pauseIndex + 1) % G.PAUSE.length;
       if (G.justPressed("ArrowUp") || G.justPressed("KeyW")) G.pauseIndex = (G.pauseIndex - 1 + G.PAUSE.length) % G.PAUSE.length;
       if (G.justPressed("Enter") || G.justPressed("Space")) G.confirmPause();
@@ -40,7 +47,7 @@
       return;
     }
     if (G.state !== "play") return;
-    if (G.justPressed("Escape")) { G.saveRun(); G.state = "pause"; G.pauseIndex = 0; return; }
+    if (G.justPressed("Escape")) { G.saveRun(); G.state = "pause"; G.pauseIndex = 0; G.subState = null; return; }
 
     for (const fn of (G.updates || [])) fn();
 
@@ -57,7 +64,7 @@
     for (const e of (G.enemies || [])) {
       if (e.hp <= 0) continue;
       if (G.overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: e.x, y: e.y, w: e.w, h: e.h })) {
-        p.hp -= 0.5;
+        if (!(G.flags && G.flags.shield > 0)) p.hp -= 0.5;
         if (p.hp <= 0) {
           G.state = "dead";
           document.getElementById("dead").classList.remove("hidden");
