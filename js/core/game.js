@@ -7,25 +7,25 @@
   G.IFRAMES = 45;
 
   G.startGame = function (fromSave) {
+    if (G.loadGrid) G.loadGrid(0, 0);
     if (!fromSave) {
       G.player = G.makePlayer();
       G.score = 0;
       G.inventory = {};
       G.visited = {};
       G.status = { burn: 0, freeze: 0, poison: 0, slow: 0, stun: 0, bleed: 0, shock: 0 };
-      if (G.loadGrid) G.loadGrid(0, 0);
-      else if (G.loadLevel) G.loadLevel(0);
       for (const e of (G.enemies || [])) { e.hp = e.maxHp || e.hp || 40; e.x = e.home; }
       if (!G.activeSave) G.createSave();
     } else if (!G.player) {
       G.player = G.makePlayer();
     }
-    G.camX = 0;
-    G.camY = 0;
-    if (G.player && G.updateCamera) G.updateCamera(G.player.x, G.player.y);
+    if (!G.platforms || !G.platforms.length) {
+      G.platforms = [{ x: 0, y: G.FLOOR_Y || 480, w: 1000, h: 120 }];
+    }
     G.particles = [];
     G.state = "play";
     G.subState = null;
+    if (G.player && G.updateCamera) G.updateCamera(G.player.x, G.player.y, true);
     document.getElementById("hud").classList.remove("hidden");
     document.getElementById("dead").classList.add("hidden");
   };
