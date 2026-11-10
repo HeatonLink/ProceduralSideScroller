@@ -14,6 +14,7 @@
   G.gridLevels = Object.create(null);
   G.currentGX = 0;
   G.currentGY = 0;
+  G.FLOOR_Y = 480;
 
   G.themeFor = function (gx, gy) {
     const dist = Math.abs(gx) + Math.abs(gy);
@@ -23,18 +24,19 @@
 
   G.makeGridLevel = function (gx, gy) {
     const theme = G.themeFor(gx, gy);
-    const platforms = [{ x: 0, y: 900, w: 1000, h: 100 }];
+    const fy = G.FLOOR_Y;
+    const platforms = [{ x: 0, y: fy, w: 1000, h: 120 }];
     for (let i = 0; i < 3; i++) {
       platforms.push({
         x: 150 + i * 250 + (Math.abs(gx) * 20 % 80),
-        y: 700 - i * 60,
+        y: fy - 140 - i * 70,
         w: 140,
         h: 24
       });
     }
     const coins = [];
     for (let i = 0; i < 5; i++) {
-      coins.push({ x: 120 + i * 160, y: 640 - (i % 3) * 40, got: false });
+      coins.push({ x: 120 + i * 160, y: fy - 180 - (i % 3) * 40, got: false });
     }
     const pits = [];
     if ((gx + gy) % 3 === 0) {
@@ -42,15 +44,15 @@
     }
     const springs = [];
     if ((gx + gy) % 2 === 0) {
-      springs.push({ x: 300 + (Math.abs(gy) * 40 % 120), y: 884, w: 40, h: 16, anim: 0 });
-      springs.push({ x: 650, y: 676, w: 40, h: 16, anim: 0 });
+      springs.push({ x: 300 + (Math.abs(gy) * 40 % 120), y: fy - 16, w: 40, h: 16, anim: 0 });
+      springs.push({ x: 650, y: fy - 200, w: 40, h: 16, anim: 0 });
     }
     const surfaces = [];
     if (Math.abs(gx) % 2 === 0) {
-      surfaces.push({ x: 120, y: 892, w: 180, h: 12, type: "slow" });
+      surfaces.push({ x: 120, y: fy - 8, w: 180, h: 12, type: "slow" });
     }
     if (Math.abs(gy) % 2 === 1) {
-      surfaces.push({ x: 520, y: 892, w: 200, h: 12, type: "fast" });
+      surfaces.push({ x: 520, y: fy - 8, w: 200, h: 12, type: "fast" });
     }
     const types = ["heal", "speed", "shield", "coinbag"];
     const powerups = [];
@@ -58,7 +60,7 @@
     for (let i = 0; i < count; i++) {
       powerups.push({
         x: 250 + i * 200,
-        y: 720 - i * 30,
+        y: fy - 160 - i * 30,
         type: types[(Math.abs(gx) + i + Math.abs(gy)) % types.length],
         got: false
       });
@@ -163,7 +165,7 @@
     }
     if (p.y < 10) {
       G.loadGrid(G.currentGX, G.currentGY - 1);
-      p.y = G.STAGE_H - 40;
+      p.y = G.FLOOR_Y - 40;
       changed = true;
     } else if (p.y > G.STAGE_H - 10) {
       G.loadGrid(G.currentGX, G.currentGY + 1);
