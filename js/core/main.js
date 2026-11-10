@@ -7,23 +7,45 @@
 
   document.getElementById("retry").onclick = G.startGame;
 
-  canvas.addEventListener("click", e => {
-    if (G.state !== "menu" || G.subState) return;
+  function canvasPos(e) {
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (G.W / rect.width);
-    const y = (e.clientY - rect.top) * (G.H / rect.height);
-    const buttons = G.menuButtons();
-    for (let i = 0; i < buttons.length; i++) {
-      const b = buttons[i];
-      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+    return {
+      x: (e.clientX - rect.left) * (G.W / rect.width),
+      y: (e.clientY - rect.top) * (G.H / rect.height)
+    };
+  }
+
+  function hit(list, x, y) {
+    for (let i = 0; i < list.length; i++) {
+      const b = list[i];
+      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return i;
+    }
+    return -1;
+  }
+
+  canvas.addEventListener("click", e => {
+    const p = canvasPos(e);
+    if (G.state === "menu" && !G.subState) {
+      const i = hit(G.menuButtons(), p.x, p.y);
+      if (i >= 0) {
         G.menuIndex = i;
         G.confirmMenu();
+      }
+      return;
+    }
+    if (G.state === "pause") {
+      if (G.subState) {
+        G.subState = null;
         return;
+      }
+      const i = hit(G.pauseButtons(), p.x, p.y);
+      if (i >= 0) {
+        G.pauseIndex = i;
+        G.confirmPause();
       }
     }
   });
 
-  // Click outside the canvas pauses if playing
   document.body.addEventListener("click", e => {
     if (e.target === canvas) return;
     if (G.state === "play") {
