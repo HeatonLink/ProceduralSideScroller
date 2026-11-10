@@ -5,6 +5,7 @@
   G.canvas = null;
   G.ctx = null;
   G.IFRAMES = 45;
+  G.frame = 0;
 
   G.startGame = function (fromSave) {
     if (!fromSave) {
@@ -66,6 +67,7 @@
   };
 
   G.update = function () {
+    G.frame++;
     if (G.state === "menu") {
       if (G.subState === "saves") { G.handleSaves(); return; }
       if (G.subState === "options" || G.subState === "binds" || G.subState === "display") {
