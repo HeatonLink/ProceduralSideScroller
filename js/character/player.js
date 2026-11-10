@@ -1,8 +1,8 @@
 (function (G) {
   G.makePlayer = function () {
-    const rig = G.makeRig("player", 1); // maker already applies 0.25
+    const rig = G.makeRig("player", 1);
     return {
-      x: 80, y: 800, vx: 0, vy: 0, w: 12, h: 20, // quarter of 36x72-ish
+      x: 80, y: 800, vx: 0, vy: 0, w: 12, h: 20,
       hp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       surface: "normal",
@@ -10,12 +10,19 @@
     };
   };
 
+  // Prefer bound actions; fall back to defaults so rebinding works.
+  function act(name, just) {
+    if (just && G.actionJust) return G.actionJust(name);
+    if (!just && G.actionPressed) return G.actionPressed(name);
+    return false;
+  }
+
   G.updatePlayer = function (p, dt) {
     p.anim += dt;
-    const left = G.pressed("KeyA") || G.pressed("ArrowLeft");
-    const right = G.pressed("KeyD") || G.pressed("ArrowRight");
-    const jump = G.justPressed("Space") || G.justPressed("ArrowUp");
-    const atk = G.justPressed("KeyJ");
+    const left = act("left") || G.pressed("KeyA") || G.pressed("ArrowLeft");
+    const right = act("right") || G.pressed("KeyD") || G.pressed("ArrowRight");
+    const jump = act("jump", true) || G.justPressed("Space") || G.justPressed("ArrowUp");
+    const atk = act("attack", true) || G.justPressed("KeyJ");
 
     p.surface = G.surfaceAt ? G.surfaceAt(p.x, p.y, p.w, p.h) : "normal";
     const speed = G.speedFor ? G.speedFor(p.surface) : G.SPEED;
@@ -48,6 +55,7 @@
 
     p.x += p.vx;
     p.y += p.vy;
+    p.x = Math.max(0, Math.min(G.STAGE_W - p.w, p.x));
     p.y = Math.max(0, p.y);
 
     if (atk && p.attack <= 0) p.attack = 18;
@@ -61,73 +69,74 @@
     G.animate(p);
   };
 
+  function setAng(bone, ang) { if (bone) bone.ang = ang; }
+
   G.animate = function (p) {
     const r = p.rig;
+    if (!r || !r.root) return;
     const t = p.anim * 0.15;
-    r.torso.ang = -90 + Math.sin(t * 2) * 2;
-    r.head.ang = 0;
-    // Ears up
-    if (r.lEar) { r.lEar.ang = -50; r.rEar.ang = 50; }
-    // Tail back
-    if (r.tail) { r.tail.ang = 160 + Math.sin(t * 4) * 8; r.tail2.ang = 20; }
-    r.lArm.ang = 20; r.lFore.ang = 10;
-    r.rArm.ang = -20; r.rFore.ang = -10;
-    r.lThigh.ang = 85; r.lShin.ang = 8;
-    r.rThigh.ang = 95; r.rShin.ang = -6;
+    setAng(r.torso, -90 + Math.sin(t * 2) * 2);
+    setAng(r.head, 0);
+    setAng(r.lEar, -50);
+    setAng(r.rEar, 50);
+    if (r.tail) setAng(r.tail, 160 + Math.sin(t * 4) * 8);
+    setAng(r.tail2, 20);
+    setAng(r.lArm, 20); setAng(r.lFore, 10);
+    setAng(r.rArm, -20); setAng(r.rFore, -10);
+    setAng(r.lThigh, 85); setAng(r.lShin, 8);
+    setAng(r.rThigh, 95); setAng(r.rShin, -6);
 
     if (p.state === "walk") {
       const s = Math.sin(t * 10);
-      r.lThigh.ang = 90 + 28 * s; r.lShin.ang = Math.max(0, 12 - 15 * s);
-      r.rThigh.ang = 90 - 28 * s; r.rShin.ang = Math.max(0, 12 + 15 * s);
-      r.lArm.ang = -22 * s; r.rArm.ang = 22 * s;
-      r.torso.ang = -90 + s * 4;
-      if (r.tail) r.tail.ang = 160 + s * 12;
+      setAng(r.lThigh, 90 + 28 * s); setAng(r.lShin, Math.max(0, 12 - 15 * s));
+      setAng(r.rThigh, 90 - 28 * s); setAng(r.rShin, Math.max(0, 12 + 15 * s));
+      setAng(r.lArm, -22 * s); setAng(r.rArm, 22 * s);
+      setAng(r.torso, -90 + s * 4);
+      if (r.tail) setAng(r.tail, 160 + s * 12);
     } else if (p.state === "jump") {
-      r.lArm.ang = -40; r.rArm.ang = -40;
-      r.lThigh.ang = 70; r.rThigh.ang = 110;
-      r.lShin.ang = 40; r.rShin.ang = 35;
+      setAng(r.lArm, -40); setAng(r.rArm, -40);
+      setAng(r.lThigh, 70); setAng(r.rThigh, 110);
+      setAng(r.lShin, 40); setAng(r.rShin, 35);
     } else if (p.state === "fall") {
-      r.lArm.ang = 25; r.rArm.ang = 25;
-      r.lThigh.ang = 80; r.rThigh.ang = 100;
-      r.lShin.ang = 15; r.rShin.ang = 10;
+      setAng(r.lArm, 25); setAng(r.rArm, 25);
+      setAng(r.lThigh, 80); setAng(r.rThigh, 100);
+      setAng(r.lShin, 15); setAng(r.rShin, 10);
     } else if (p.state === "attack") {
       const a = 1 - p.attack / 18;
-      r.rArm.ang = -20 - 90 * a;
-      r.rFore.ang = -30 * a;
+      setAng(r.rArm, -20 - 90 * a);
+      setAng(r.rFore, -30 * a);
     }
-    G.pose(r.root, p.x + 6, p.y + 6, 0);
+    G.pose(r.root, p.x + p.w / 2, p.y + 6, 0);
   };
 
   G.addDraw("player", function (ctx, player) {
-    if (!player) return;
+    if (!player || !player.rig || !player.rig.root) return;
     ctx.save();
     ctx.translate(-G.camX, 0);
-    const col = player.attack > 0 ? "#ffcc44" : "#8d6e63"; // mouse brown
+    const col = player.attack > 0 ? "#ffcc44" : "#8d6e63";
     G.drawBone(ctx, player.rig.root, col);
     const h = player.rig.head;
-    const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
-    const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
-    // Round head
-    ctx.fillStyle = "#a1887f";
-    ctx.beginPath();
-    ctx.arc(hx, hy - 2, 5, 0, Math.PI * 2);
-    ctx.fill();
-    // Ears
-    ctx.fillStyle = "#d7ccc8";
-    ctx.beginPath();
-    ctx.arc(hx - 4, hy - 6, 3.5, 0, Math.PI * 2);
-    ctx.arc(hx + 4, hy - 6, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-    // Snout
-    ctx.fillStyle = "#efebe9";
-    ctx.beginPath();
-    ctx.arc(hx + 3, hy, 2, 0, Math.PI * 2);
-    ctx.fill();
-    // Eye
-    ctx.fillStyle = "#212121";
-    ctx.beginPath();
-    ctx.arc(hx + 1, hy - 2, 1.2, 0, Math.PI * 2);
-    ctx.fill();
+    if (h) {
+      const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
+      const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
+      ctx.fillStyle = "#a1887f";
+      ctx.beginPath();
+      ctx.arc(hx, hy - 2, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#d7ccc8";
+      ctx.beginPath();
+      ctx.arc(hx - 4, hy - 6, 3.5, 0, Math.PI * 2);
+      ctx.arc(hx + 4, hy - 6, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#efebe9";
+      ctx.beginPath();
+      ctx.arc(hx + 3, hy, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#212121";
+      ctx.beginPath();
+      ctx.arc(hx + 1, hy - 2, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   });
 
