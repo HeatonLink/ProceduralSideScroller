@@ -46,6 +46,13 @@
       springs.push({ x: 300 + (Math.abs(gy) * 40 % 120), y: 884, w: 40, h: 16, anim: 0 });
       springs.push({ x: 650, y: 676, w: 40, h: 16, anim: 0 });
     }
+    const surfaces = [];
+    if (Math.abs(gx) % 2 === 0) {
+      surfaces.push({ x: 120, y: 892, w: 180, h: 12, type: "slow" });
+    }
+    if (Math.abs(gy) % 2 === 1) {
+      surfaces.push({ x: 520, y: 892, w: 200, h: 12, type: "fast" });
+    }
     return {
       id: gx + "," + gy,
       gx: gx,
@@ -57,6 +64,7 @@
       coins: coins,
       pits: pits,
       springs: springs,
+      surfaces: surfaces,
       color: theme.color,
       ground: theme.ground
     };
@@ -82,6 +90,7 @@
     lvl.coins = null;
     lvl.pits = null;
     lvl.springs = null;
+    lvl.surfaces = null;
     delete G.gridLevels[key];
   };
 
@@ -116,6 +125,7 @@
     G.coins = lvl.coins;
     G.pits = lvl.pits || [];
     G.springs = lvl.springs || [];
+    G.surfaces = lvl.surfaces || [];
     G.stageW = lvl.w;
     G.stageH = lvl.h;
     G.levels = Object.keys(G.gridLevels).map(k => G.gridLevels[k]);
