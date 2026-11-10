@@ -1,8 +1,9 @@
 (function (G) {
   G.makePlayer = function () {
     const rig = G.makeRig("player", 1);
+    const floor = G.FLOOR_Y || 480;
     return {
-      x: 120, y: 860, vx: 0, vy: 0, w: 18, h: 28,
+      x: 160, y: floor - 32, vx: 0, vy: 0, w: 24, h: 32,
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
@@ -120,7 +121,7 @@
       setAng(r.rArm, -20 - 90 * a);
       setAng(r.rFore, -30 * a);
     }
-    G.pose(r.root, p.x + p.w / 2, p.y + 6, 0);
+    G.pose(r.root, p.x + p.w / 2, p.y + 8, 0);
   };
 
   G.addDraw("player", function (ctx, player) {
@@ -132,7 +133,8 @@
       return;
     }
     const w = G.currentWeapon ? G.currentWeapon() : { color: "#8d6e63" };
-    const col = player.attack > 0 ? w.color : "#8d6e63";
+    const col = player.attack > 0 ? w.color : "#5d4037";
+    ctx.lineJoin = "round";
     G.drawBone(ctx, player.rig.root, col);
     const h = player.rig.head;
     if (h) {
@@ -140,20 +142,20 @@
       const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
       ctx.fillStyle = "#a1887f";
       ctx.beginPath();
-      ctx.arc(hx, hy - 2, 6, 0, Math.PI * 2);
+      ctx.arc(hx, hy - 2, 8, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#d7ccc8";
       ctx.beginPath();
-      ctx.arc(hx - 5, hy - 7, 4, 0, Math.PI * 2);
-      ctx.arc(hx + 5, hy - 7, 4, 0, Math.PI * 2);
+      ctx.arc(hx - 6, hy - 8, 5, 0, Math.PI * 2);
+      ctx.arc(hx + 6, hy - 8, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#efebe9";
       ctx.beginPath();
-      ctx.arc(hx + 4, hy, 2.5, 0, Math.PI * 2);
+      ctx.arc(hx + 5, hy, 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#212121";
       ctx.beginPath();
-      ctx.arc(hx + 1, hy - 2, 1.5, 0, Math.PI * 2);
+      ctx.arc(hx + 2, hy - 2, 1.8, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
