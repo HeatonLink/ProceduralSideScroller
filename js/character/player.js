@@ -3,7 +3,7 @@
     const rig = G.makeRig("player", 1);
     const floor = G.FLOOR_Y || 480;
     return {
-      x: 200, y: floor - 40, vx: 0, vy: 0, w: 28, h: 40,
+      x: 80, y: floor - 48, vx: 0, vy: 0, w: 36, h: 48,
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
@@ -121,48 +121,44 @@
       setAng(r.rArm, -20 - 90 * a);
       setAng(r.rFore, -30 * a);
     }
-    G.pose(r.root, p.x + p.w / 2, p.y + p.h * 0.6, 0);
+    G.pose(r.root, p.x + p.w / 2, p.y + p.h * 0.55, 0);
   };
 
   G.addDraw("player", function (ctx, player) {
-    if (!player || !player.rig || !player.rig.root) return;
+    if (!player) return;
     ctx.save();
     ctx.translate(-G.camX, -G.camY);
-    if (player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0) {
-      ctx.restore();
-      return;
-    }
-    const w = G.currentWeapon ? G.currentWeapon() : { color: "#8d6e63" };
-    const col = player.attack > 0 ? w.color : "#5d4037";
-    ctx.lineJoin = "round";
-    G.drawBone(ctx, player.rig.root, col);
-    // Solid body so the mouse is always visible
-    ctx.fillStyle = "#6d4c41";
-    ctx.beginPath();
-    ctx.ellipse(player.x + player.w / 2, player.y + player.h * 0.45, 10, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    const h = player.rig.head;
-    if (h) {
-      const a = h.world != null ? h.world : h.ang;
-      const hx = h.x + Math.cos(a * Math.PI / 180) * h.len;
-      const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
-      ctx.fillStyle = "#a1887f";
+    if (!(player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0)) {
+      const cx = player.x + player.w / 2;
+      const cy = player.y + player.h * 0.45;
+      // Bright body so the player is always visible
+      ctx.fillStyle = "#ff9800";
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(hx, hy - 2, 8, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, 14, 16, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#d7ccc8";
-      ctx.beginPath();
-      ctx.arc(hx - 6, hy - 8, 5, 0, Math.PI * 2);
-      ctx.arc(hx + 6, hy - 8, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#efebe9";
-      ctx.beginPath();
-      ctx.arc(hx + 5, hy, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#212121";
-      ctx.beginPath();
-      ctx.arc(hx + 2, hy - 2, 1.8, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.stroke();
+      if (player.rig && player.rig.root) {
+        const w = G.currentWeapon ? G.currentWeapon() : { color: "#5d4037" };
+        const col = player.attack > 0 ? w.color : "#5d4037";
+        G.drawBone(ctx, player.rig.root, col);
+        const h = player.rig.head;
+        if (h) {
+          const a = h.world != null ? h.world : h.ang;
+          const hx = h.x + Math.cos(a * Math.PI / 180) * h.len;
+          const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
+          ctx.fillStyle = "#ffcc80";
+          ctx.beginPath();
+          ctx.arc(hx, hy - 2, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          ctx.arc(hx - 7, hy - 9, 6, 0, Math.PI * 2);
+          ctx.arc(hx + 7, hy - 9, 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
     }
     ctx.restore();
   });
