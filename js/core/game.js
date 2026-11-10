@@ -7,8 +7,8 @@
   G.IFRAMES = 45;
 
   G.startGame = function (fromSave) {
-    if (G.loadGrid) G.loadGrid(0, 0);
     if (!fromSave) {
+      G.worldState = {};
       G.score = 0;
       G.inventory = {};
       G.visited = {};
@@ -16,16 +16,18 @@
       for (const e of (G.enemies || [])) { e.hp = e.maxHp || e.hp || 40; e.x = e.home; }
       if (!G.activeSave && G.createSave) G.createSave();
     }
-    // Always after createSave. createSave used to null the player.
+    if (G.loadGrid) G.loadGrid(0, 0);
     if (!G.player) G.player = G.makePlayer();
     if (!G.platforms || !G.platforms.length) {
       G.platforms = [{ x: 0, y: G.FLOOR_Y || 480, w: 1000, h: 120 }];
     }
     const floor = G.FLOOR_Y || 480;
-    G.player.x = 80;
-    G.player.y = floor - (G.player.h || 48);
-    G.player.vx = 0;
-    G.player.vy = 0;
+    if (!fromSave) {
+      G.player.x = 80;
+      G.player.y = floor - (G.player.h || 48);
+      G.player.vx = 0;
+      G.player.vy = 0;
+    }
     G.particles = [];
     if (G.updateCamera) G.updateCamera(G.player.x, G.player.y, true);
     G.state = "play";
@@ -101,6 +103,7 @@
     for (const c of (G.coins || [])) {
       if (!c.got && Math.abs(p.x + p.w / 2 - c.x) < reach && Math.abs(p.y + p.h / 2 - c.y) < reach + 10) {
         c.got = true;
+        if (G.markState) G.markState(c.gx, c.gy, "coin", c.i, { got: true });
         G.score += 10;
         G.addParticle(c.x, c.y, 0, -2, 30, "#ffd700", 5);
       }
