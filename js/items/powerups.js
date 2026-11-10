@@ -16,6 +16,7 @@
   G.collectPowerup = function (pu) {
     if (pu.got) return;
     pu.got = true;
+    if (G.markState && pu.gx != null) G.markState(pu.gx, pu.gy, "power", pu.i, { got: true });
     const def = G.POWERUP_TYPES[pu.type];
     if (!def) return;
     G.inventory[pu.type] = (G.inventory[pu.type] || 0) + 1;
