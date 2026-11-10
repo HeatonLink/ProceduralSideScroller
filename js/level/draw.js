@@ -11,22 +11,23 @@
 
   G.addDraw("world", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, -G.camY);
-    const theme = G.gridLevels && G.gridLevels[G.currentGX + "," + G.currentGY];
-    const ground = theme ? theme.ground : "#5d4037";
-    const top = theme ? theme.color : "#4caf50";
+    const cx = Math.round(G.camX);
+    const cy = Math.round(G.camY);
+    ctx.translate(-cx, -cy);
     for (const p of (G.platforms || [])) {
-      ctx.fillStyle = ground;
-      ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.fillStyle = top;
-      ctx.fillRect(p.x, p.y, p.w, 8);
+      const x = Math.round(p.x);
+      const y = Math.round(p.y);
+      ctx.fillStyle = p.ground || "#3e2723";
+      ctx.fillRect(x, y, Math.ceil(p.w) + 1, p.h);
+      ctx.fillStyle = p.color || "#4caf50";
+      ctx.fillRect(x, y, Math.ceil(p.w) + 1, 8);
     }
     ctx.restore();
   });
 
   G.addDraw("items", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, -G.camY);
+    ctx.translate(-Math.round(G.camX), -Math.round(G.camY));
     ctx.fillStyle = "#ffd700";
     for (const c of (G.coins || [])) {
       if (c.got) continue;
