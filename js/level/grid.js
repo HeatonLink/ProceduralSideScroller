@@ -30,7 +30,7 @@
     const theme = G.themeFor(gx, gy);
     const fy = G.FLOOR_Y;
     const dust = theme.dust || "#a1887f";
-    const platforms = [{ x: 0, y: fy, w: 1000, h: 120, dust: dust }];
+    const platforms = [{ x: 0, y: fy, w: 1000, h: 120, dust: dust, floor: true }];
     for (let i = 0; i < 3; i++) {
       platforms.push({
         x: 150 + i * 250 + (Math.abs(gx) * 20 % 80),
@@ -136,7 +136,6 @@
     G.unloadFar();
   };
 
-  // Copy loaded cells into world space so the player can walk across them.
   G.rebuildActive = function () {
     const plats = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
     for (const key in G.gridLevels) {
@@ -145,7 +144,18 @@
       const ox = lvl.gx * G.STAGE_W;
       const oy = lvl.gy * G.STAGE_H;
       for (const p of (lvl.platforms || [])) {
-        plats.push({ x: p.x + ox, y: p.y + oy, w: p.w, h: p.h, dust: p.dust });
+        // Overlap the cell edge so canvas rounding cannot open a seam.
+        const extra = p.floor ? 4 : 0;
+        plats.push({
+          x: p.x + ox - extra,
+          y: p.y + oy,
+          w: p.w + extra * 2,
+          h: p.h,
+          dust: p.dust,
+          floor: p.floor,
+          color: lvl.color,
+          ground: lvl.ground
+        });
       }
       for (const c of (lvl.coins || [])) {
         coins.push({ x: c.x + ox, y: c.y + oy, got: c.got });
@@ -188,7 +198,6 @@
 
   G.loadGrid(0, 0);
 
-  // Track the cell the player is in. Do not move the player.
   G.addUpdate(function () {
     const p = G.player;
     if (!p || G.state !== "play") return;
