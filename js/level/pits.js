@@ -38,18 +38,19 @@
   G.addDraw("world", function (ctx) {
     ctx.save();
     ctx.translate(-G.camX, -G.camY);
+    const fy = G.FLOOR_Y || 480;
     for (const pit of G.pits) {
       if (!pit.open) {
         ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(pit.x, 900);
-        ctx.lineTo(pit.x + pit.w / 2, 910);
-        ctx.lineTo(pit.x + pit.w, 900);
+        ctx.moveTo(pit.x, fy);
+        ctx.lineTo(pit.x + pit.w / 2, fy + 10);
+        ctx.lineTo(pit.x + pit.w, fy);
         ctx.stroke();
       } else {
         ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(pit.x, 900, pit.w, 100);
+        ctx.fillRect(pit.x, fy, pit.w, 120);
       }
     }
     ctx.restore();
