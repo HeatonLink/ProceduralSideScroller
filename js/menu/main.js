@@ -61,7 +61,10 @@
   G.drawSub = function (ctx) {
     if (!G.subState) return;
     if (G.subState === "saves") { G.drawSaves(ctx); return; }
-    if (G.subState === "options" || G.subState === "binds") { G.drawOptions(ctx); return; }
+    if (G.subState === "options" || G.subState === "binds" || G.subState === "display") {
+      G.drawOptions(ctx);
+      return;
+    }
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, G.W, G.H);
     ctx.fillStyle = "#fff";
