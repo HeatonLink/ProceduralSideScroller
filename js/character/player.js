@@ -6,11 +6,11 @@
       hp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       surface: "normal",
+      weapon: 0,
       rig, state: "idle"
     };
   };
 
-  // Prefer bound actions; fall back to defaults so rebinding works.
   function act(name, just) {
     if (just && G.actionJust) return G.actionJust(name);
     if (!just && G.actionPressed) return G.actionPressed(name);
@@ -23,6 +23,11 @@
     const right = act("right") || G.pressed("KeyD") || G.pressed("ArrowRight");
     const jump = act("jump", true) || G.justPressed("Space") || G.justPressed("ArrowUp");
     const atk = act("attack", true) || G.justPressed("KeyJ");
+
+    // Cycle weapons with Q / E
+    if (G.justPressed("KeyQ")) G.cycleWeapon(-1);
+    if (G.justPressed("KeyE")) G.cycleWeapon(1);
+    p.weapon = G.weaponIndex;
 
     p.surface = G.surfaceAt ? G.surfaceAt(p.x, p.y, p.w, p.h) : "normal";
     const speed = G.speedFor ? G.speedFor(p.surface) : G.SPEED;
@@ -101,6 +106,8 @@
       setAng(r.lArm, 25); setAng(r.rArm, 25);
       setAng(r.lThigh, 80); setAng(r.rThigh, 100);
       setAng(r.lShin, 15); setAng(r.rShin, 10);
+    } else if (p.state === "attack" && G.weaponPose) {
+      G.weaponPose(r, p);
     } else if (p.state === "attack") {
       const a = 1 - p.attack / 18;
       setAng(r.rArm, -20 - 90 * a);
@@ -113,7 +120,8 @@
     if (!player || !player.rig || !player.rig.root) return;
     ctx.save();
     ctx.translate(-G.camX, 0);
-    const col = player.attack > 0 ? "#ffcc44" : "#8d6e63";
+    const w = G.currentWeapon ? G.currentWeapon() : { color: "#8d6e63" };
+    const col = player.attack > 0 ? w.color : "#8d6e63";
     G.drawBone(ctx, player.rig.root, col);
     const h = player.rig.head;
     if (h) {
