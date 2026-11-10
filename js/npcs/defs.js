@@ -1,8 +1,6 @@
 (function (G) {
-  // A few dozen NPCs scattered across the grid.
-  // Each has dialogue options that set flags and can move them to other cells.
   G.NPC_DEFS = [
-    { id: "guide", name: "Guide", gx: 0, gy: 0, x: 200, text: "Welcome. Where should I go?", options: [
+    { id: "guide", name: "Guide", gx: 0, gy: 0, x: 320, text: "Welcome. Where should I go?", options: [
       { label: "Stay here", flag: "guide_stay", to: { gx: 0, gy: 0 } },
       { label: "Go east", flag: "guide_east", to: { gx: 1, gy: 0 } },
       { label: "Go north", flag: "guide_north", to: { gx: 0, gy: -1 } }
