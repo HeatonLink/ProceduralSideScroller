@@ -16,6 +16,10 @@
   G.currentGY = 0;
   G.FLOOR_Y = 480;
   G.worldState = G.worldState || {};
+  G.originGX = 0;
+  G.originGY = 0;
+  G.respawnGX = 0;
+  G.respawnGY = 0;
 
   G.themeFor = function (gx, gy) {
     const dist = Math.abs(gx) + Math.abs(gy);
@@ -32,6 +36,34 @@
   };
   G.stateFor = G.stateFor || function (gx, gy, kind, i) {
     return G.worldState[G.stateKey(gx, gy, kind, i)];
+  };
+
+  // Cross of 2, plus the four adjacent diagonals.
+  G.inLoadShape = function (gx, gy) {
+    const dx = Math.abs(gx - G.currentGX);
+    const dy = Math.abs(gy - G.currentGY);
+    if (dx === 0 && dy <= 2) return true;
+    if (dy === 0 && dx <= 2) return true;
+    if (dx === 1 && dy === 1) return true;
+    return false;
+  };
+
+  G.keepLoaded = function (gx, gy) {
+    if (gx === G.originGX && gy === G.originGY) return true;
+    if (gx === G.respawnGX && gy === G.respawnGY) return true;
+    return G.inLoadShape(gx, gy);
+  };
+
+  G.setOrigin = function (gx, gy) {
+    G.originGX = gx;
+    G.originGY = gy;
+  };
+
+  G.setRespawn = function (gx, gy) {
+    G.respawnGX = gx;
+    G.respawnGY = gy;
+    G.loadCell(gx, gy);
+    if (G.rebuildActive) G.rebuildActive();
   };
 
   G.makeGridLevel = function (gx, gy) {
@@ -115,6 +147,7 @@
   };
 
   G.unloadCell = function (gx, gy) {
+    if (G.keepLoaded && G.keepLoaded(gx, gy)) return;
     const key = gx + "," + gy;
     const lvl = G.gridLevels[key];
     if (!lvl) return;
@@ -128,23 +161,24 @@
   };
 
   G.unloadFar = function () {
-    const r = G.LOAD_RADIUS;
     for (const key in G.gridLevels) {
       const lvl = G.gridLevels[key];
       if (!lvl) continue;
-      const dx = Math.abs(lvl.gx - G.currentGX);
-      const dy = Math.abs(lvl.gy - G.currentGY);
-      if (dx > r || dy > r) G.unloadCell(lvl.gx, lvl.gy);
+      if (!G.keepLoaded(lvl.gx, lvl.gy)) G.unloadCell(lvl.gx, lvl.gy);
     }
   };
 
   G.loadWindow = function () {
-    const r = G.LOAD_RADIUS;
-    for (let dy = -r; dy <= r; dy++) {
-      for (let dx = -r; dx <= r; dx++) {
-        G.loadCell(G.currentGX + dx, G.currentGY + dy);
-      }
+    for (let d = -2; d <= 2; d++) {
+      G.loadCell(G.currentGX + d, G.currentGY);
+      G.loadCell(G.currentGX, G.currentGY + d);
     }
+    G.loadCell(G.currentGX - 1, G.currentGY - 1);
+    G.loadCell(G.currentGX + 1, G.currentGY - 1);
+    G.loadCell(G.currentGX - 1, G.currentGY + 1);
+    G.loadCell(G.currentGX + 1, G.currentGY + 1);
+    G.loadCell(G.originGX, G.originGY);
+    G.loadCell(G.respawnGX, G.respawnGY);
     G.unloadFar();
   };
 
