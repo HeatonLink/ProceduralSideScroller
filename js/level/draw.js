@@ -11,7 +11,7 @@
 
   G.addDraw("world", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     const theme = G.gridLevels && G.gridLevels[G.currentGX + "," + G.currentGY];
     const ground = theme ? theme.ground : "#5d4037";
     const top = theme ? theme.color : "#4caf50";
@@ -26,7 +26,7 @@
 
   G.addDraw("items", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     ctx.fillStyle = "#ffd700";
     for (const c of (G.coins || [])) {
       if (c.got) continue;
@@ -41,7 +41,6 @@
   });
 
   G.addDraw("fx", function (ctx) {
-    // Grid label so it's easy to see which cell the character is in
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(8, 8, 160, 28);
     ctx.fillStyle = "#fff";
