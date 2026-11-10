@@ -3,7 +3,7 @@
     const rig = G.makeRig("player", 1);
     const floor = G.FLOOR_Y || 480;
     return {
-      x: 160, y: floor - 32, vx: 0, vy: 0, w: 24, h: 32,
+      x: 200, y: floor - 40, vx: 0, vy: 0, w: 28, h: 40,
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
@@ -121,7 +121,7 @@
       setAng(r.rArm, -20 - 90 * a);
       setAng(r.rFore, -30 * a);
     }
-    G.pose(r.root, p.x + p.w / 2, p.y + 8, 0);
+    G.pose(r.root, p.x + p.w / 2, p.y + p.h * 0.6, 0);
   };
 
   G.addDraw("player", function (ctx, player) {
@@ -136,6 +136,11 @@
     const col = player.attack > 0 ? w.color : "#5d4037";
     ctx.lineJoin = "round";
     G.drawBone(ctx, player.rig.root, col);
+    // Solid body so the mouse is always visible
+    ctx.fillStyle = "#6d4c41";
+    ctx.beginPath();
+    ctx.ellipse(player.x + player.w / 2, player.y + player.h * 0.45, 10, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
     const h = player.rig.head;
     if (h) {
       const a = h.world != null ? h.world : h.ang;
