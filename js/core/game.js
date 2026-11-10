@@ -79,6 +79,10 @@
       return;
     }
     if (G.state === "pause") {
+      if (G.subState === "options" || G.subState === "binds" || G.subState === "display") {
+        G.handleOptions();
+        return;
+      }
       if (G.subState) {
         if (G.justPressed("Escape") || G.justPressed("Backspace")) G.subState = null;
         return;
