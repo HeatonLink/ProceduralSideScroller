@@ -2,7 +2,6 @@
   G.enemies = G.enemies || [];
   G.enemySeq = Object.create(null);
 
-  // Stable id from cell + type + spawn index so saves survive reloads.
   G.enemyIdFor = function (e) {
     const gx = e.gx != null ? e.gx : (G.currentGX || 0);
     const gy = e.gy != null ? e.gy : (G.currentGY || 0);
@@ -14,6 +13,7 @@
 
   G.addEnemy = function (def) {
     const e = Object.assign({}, G.ENEMY_DEFAULT, def);
+    if (e.maxHp == null) e.maxHp = e.hp;
     if (!e.rig && G.makeRig) e.rig = G.makeRig("enemy", e.scale);
     if (e.home === 0) e.home = e.x;
     e.gx = e.gx != null ? e.gx : G.currentGX;
@@ -65,10 +65,12 @@
 
   G.hitEnemies = function (px, py, facing) {
     const box = { x: px + (facing > 0 ? 8 : -20), y: py, w: 22, h: 18 };
+    const w = G.currentWeapon ? G.currentWeapon() : { dmg: 15 };
+    const dmg = w.dmg || 15;
     for (const e of G.enemies) {
       if (e.hp <= 0) continue;
       if (G.overlap(box, { x: e.x, y: e.y, w: e.w, h: e.h })) {
-        e.hp -= 15;
+        e.hp -= dmg;
         e.x += facing * 12;
         for (let i = 0; i < 8; i++) G.addParticle(e.x + 16, e.y + 20, (Math.random() - 0.5) * 6, -3, 25, "#ff5555", 4);
         if (e.hp <= 0) {
