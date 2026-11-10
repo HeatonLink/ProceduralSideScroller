@@ -1,5 +1,4 @@
 (function (G) {
-  // Surface types that change movement speed while the player stands on them.
   G.surfaces = [];
 
   G.addSurface = function (x, y, w, h, type) {
@@ -25,7 +24,7 @@
 
   G.addDraw("world", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const s of G.surfaces) {
       if (s.type === "slow") {
         ctx.fillStyle = "#5d4037";
