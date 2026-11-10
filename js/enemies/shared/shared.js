@@ -36,10 +36,10 @@
       else e.y += 2;
       const r = e.rig;
       if (!r || !r.root) continue;
-      const s = Math.sin(e.anim * 0.2);
-      setAng(r.lThigh, 90 + 22 * s); setAng(r.rThigh, 90 - 22 * s);
-      setAng(r.lShin, Math.max(0, 10 - 8 * s)); setAng(r.rShin, Math.max(0, 10 + 8 * s));
-      setAng(r.lArm, -18 * s); setAng(r.rArm, 18 * s);
+      const s = Math.sin(e.anim * 0.06);
+      setAng(r.lThigh, 90 + 18 * s); setAng(r.rThigh, 90 - 18 * s);
+      setAng(r.lShin, Math.max(0, 10 - 6 * s)); setAng(r.rShin, Math.max(0, 10 + 6 * s));
+      setAng(r.lArm, -12 * s); setAng(r.rArm, 12 * s);
       setAng(r.torso, -90);
       G.pose(r.root, e.x + (e.w || 32) / 2, e.y + 18, 0);
     }
