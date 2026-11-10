@@ -32,11 +32,10 @@
         h: 24
       });
     }
-    const coins = [
-      { x: 200, y: 660, got: false },
-      { x: 500, y: 600, got: false },
-      { x: 800, y: 680, got: false }
-    ];
+    const coins = [];
+    for (let i = 0; i < 5; i++) {
+      coins.push({ x: 120 + i * 160, y: 640 - (i % 3) * 40, got: false });
+    }
     const pits = [];
     if ((gx + gy) % 3 === 0) {
       pits.push({ x: 400 + (Math.abs(gx) * 30 % 100), w: 80, platformIndex: 0, open: false });
@@ -53,6 +52,17 @@
     if (Math.abs(gy) % 2 === 1) {
       surfaces.push({ x: 520, y: 892, w: 200, h: 12, type: "fast" });
     }
+    const types = ["heal", "speed", "shield", "coinbag"];
+    const powerups = [];
+    const count = 1 + Math.abs(gx + gy) % 3;
+    for (let i = 0; i < count; i++) {
+      powerups.push({
+        x: 250 + i * 200,
+        y: 720 - i * 30,
+        type: types[(Math.abs(gx) + i + Math.abs(gy)) % types.length],
+        got: false
+      });
+    }
     return {
       id: gx + "," + gy,
       gx: gx,
@@ -65,6 +75,7 @@
       pits: pits,
       springs: springs,
       surfaces: surfaces,
+      powerups: powerups,
       color: theme.color,
       ground: theme.ground
     };
@@ -91,6 +102,7 @@
     lvl.pits = null;
     lvl.springs = null;
     lvl.surfaces = null;
+    lvl.powerups = null;
     delete G.gridLevels[key];
   };
 
@@ -118,6 +130,7 @@
   G.loadGrid = function (gx, gy) {
     G.currentGX = gx;
     G.currentGY = gy;
+    if (G.markVisited) G.markVisited(gx, gy);
     G.loadWindow();
     const lvl = G.gridLevels[gx + "," + gy];
     if (!lvl) return;
@@ -126,6 +139,7 @@
     G.pits = lvl.pits || [];
     G.springs = lvl.springs || [];
     G.surfaces = lvl.surfaces || [];
+    G.powerups = lvl.powerups || [];
     G.stageW = lvl.w;
     G.stageH = lvl.h;
     G.levels = Object.keys(G.gridLevels).map(k => G.gridLevels[k]);
