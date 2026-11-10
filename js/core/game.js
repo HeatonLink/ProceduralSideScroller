@@ -32,6 +32,14 @@
     return G.justPressed("Escape");
   }
 
+  G.killPlayer = function (p, type) {
+    p.hp = 0;
+    p.deathType = type || p.lastHit || "blunt";
+    p.deathAnim = 0;
+    G.state = "dead";
+    document.getElementById("dead").classList.remove("hidden");
+  };
+
   G.update = function () {
     if (G.state === "menu") {
       if (G.subState === "saves") { G.handleSaves(); return; }
@@ -56,6 +64,11 @@
       if (pauseKey()) G.state = "play";
       return;
     }
+    if (G.state === "dead") {
+      if (G.runUpdates) G.runUpdates();
+      if (G.player && G.playDeath) G.playDeath(G.player);
+      return;
+    }
     if (G.state !== "play") return;
     if (pauseKey()) { G.saveRun(); G.state = "pause"; G.pauseIndex = 0; G.subState = null; return; }
 
@@ -78,10 +91,7 @@
       if (G.overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: e.x, y: e.y, w: e.w, h: e.h })) {
         if (G.applyAttack) G.applyAttack(e, p);
         else if (!(G.flags && G.flags.shield > 0)) p.hp -= 0.5;
-        if (p.hp <= 0) {
-          G.state = "dead";
-          document.getElementById("dead").classList.remove("hidden");
-        }
+        if (p.hp <= 0) G.killPlayer(p, p.lastHit);
       }
     }
     G.updateCamera(p.x);
