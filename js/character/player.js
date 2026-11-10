@@ -3,8 +3,9 @@
     const rig = G.makeRig("player", 1);
     return {
       x: 80, y: 800, vx: 0, vy: 0, w: 12, h: 20,
-      hp: G.MAX_HP, facing: 1, grounded: false,
+      hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
+      iFrames: 0, knock: 0,
       surface: "normal",
       weapon: 0,
       rig, state: "idle"
@@ -19,12 +20,14 @@
 
   G.updatePlayer = function (p, dt) {
     p.anim += dt;
+    if (p.iFrames > 0) p.iFrames--;
+    if (p.knock > 0) p.knock--;
+
     const left = act("left") || G.pressed("KeyA") || G.pressed("ArrowLeft");
     const right = act("right") || G.pressed("KeyD") || G.pressed("ArrowRight");
     const jump = act("jump", true) || G.justPressed("Space") || G.justPressed("ArrowUp");
     const atk = act("attack", true) || G.justPressed("KeyJ");
 
-    // Cycle weapons with Q / E
     if (G.justPressed("KeyQ")) G.cycleWeapon(-1);
     if (G.justPressed("KeyE")) G.cycleWeapon(1);
     p.weapon = G.weaponIndex;
@@ -32,9 +35,14 @@
     p.surface = G.surfaceAt ? G.surfaceAt(p.x, p.y, p.w, p.h) : "normal";
     const speed = G.speedFor ? G.speedFor(p.surface) : G.SPEED;
 
-    if (left) { p.vx = -speed; p.facing = -1; }
-    else if (right) { p.vx = speed; p.facing = 1; }
-    else p.vx *= G.FRICTION;
+    // Ignore input while knocked back
+    if (p.knock <= 0) {
+      if (left) { p.vx = -speed; p.facing = -1; }
+      else if (right) { p.vx = speed; p.facing = 1; }
+      else p.vx *= G.FRICTION;
+    } else {
+      p.vx *= 0.92;
+    }
 
     if (jump) p.buffer = G.BUFFER;
     if (p.buffer > 0) p.buffer--;
@@ -50,7 +58,7 @@
       p.vy += G.GRAVITY;
     }
 
-    if (p.buffer > 0 && p.coyote > 0) {
+    if (p.buffer > 0 && p.coyote > 0 && p.knock <= 0) {
       p.vy = G.JUMP;
       p.buffer = 0;
       p.coyote = 0;
@@ -120,6 +128,11 @@
     if (!player || !player.rig || !player.rig.root) return;
     ctx.save();
     ctx.translate(-G.camX, 0);
+    // Flash while invincible
+    if (player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0) {
+      ctx.restore();
+      return;
+    }
     const w = G.currentWeapon ? G.currentWeapon() : { color: "#8d6e63" };
     const col = player.attack > 0 ? w.color : "#8d6e63";
     G.drawBone(ctx, player.rig.root, col);
