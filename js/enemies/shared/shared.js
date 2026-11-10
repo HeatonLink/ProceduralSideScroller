@@ -1,17 +1,29 @@
 (function (G) {
   G.enemies = G.enemies || [];
-  G.enemyId = G.enemyId || 1;
+  G.enemySeq = Object.create(null);
+
+  // Stable id from cell + type + spawn index so saves survive reloads.
+  G.enemyIdFor = function (e) {
+    const gx = e.gx != null ? e.gx : (G.currentGX || 0);
+    const gy = e.gy != null ? e.gy : (G.currentGY || 0);
+    const type = e.type || e.name || "e";
+    const key = gx + "," + gy + "," + type;
+    G.enemySeq[key] = (G.enemySeq[key] || 0) + 1;
+    return key + "#" + G.enemySeq[key];
+  };
 
   G.addEnemy = function (def) {
     const e = Object.assign({}, G.ENEMY_DEFAULT, def);
     if (!e.rig && G.makeRig) e.rig = G.makeRig("enemy", e.scale);
     if (e.home === 0) e.home = e.x;
-    if (e.id == null) e.id = G.enemyId++;
     e.gx = e.gx != null ? e.gx : G.currentGX;
     e.gy = e.gy != null ? e.gy : G.currentGY;
+    if (e.id == null) e.id = G.enemyIdFor(e);
     if (G.applyEnemyState) G.applyEnemyState(e);
     G.enemies.push(e);
   };
+
+  function setAng(bone, ang) { if (bone) bone.ang = ang; }
 
   G.updateEnemies = function () {
     for (const e of G.enemies) {
@@ -23,12 +35,13 @@
       if (gy !== null) e.y = gy - e.h;
       else e.y += 2;
       const r = e.rig;
+      if (!r || !r.root) continue;
       const s = Math.sin(e.anim * 0.2);
-      r.lThigh.ang = 90 + 22 * s; r.rThigh.ang = 90 - 22 * s;
-      r.lShin.ang = Math.max(0, 10 - 8 * s); r.rShin.ang = Math.max(0, 10 + 8 * s);
-      r.lArm.ang = -18 * s; r.rArm.ang = 18 * s;
-      r.torso.ang = -90;
-      G.pose(r.root, e.x + 16, e.y + 18, 0);
+      setAng(r.lThigh, 90 + 22 * s); setAng(r.rThigh, 90 - 22 * s);
+      setAng(r.lShin, Math.max(0, 10 - 8 * s)); setAng(r.rShin, Math.max(0, 10 + 8 * s));
+      setAng(r.lArm, -18 * s); setAng(r.rArm, 18 * s);
+      setAng(r.torso, -90);
+      G.pose(r.root, e.x + (e.w || 32) / 2, e.y + 18, 0);
     }
   };
 
@@ -36,9 +49,10 @@
     ctx.save();
     ctx.translate(-G.camX, 0);
     for (const e of G.enemies) {
-      if (e.hp <= 0) continue;
+      if (e.hp <= 0 || !e.rig || !e.rig.root) continue;
       G.drawBone(ctx, e.rig.root, e.color || "#e74c3c");
       const h = e.rig.head;
+      if (!h) continue;
       const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
       const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
       ctx.fillStyle = "#f5b7b1";
@@ -50,7 +64,7 @@
   });
 
   G.hitEnemies = function (px, py, facing) {
-    const box = { x: px + (facing > 0 ? 20 : -40), y: py + 10, w: 50, h: 40 };
+    const box = { x: px + (facing > 0 ? 8 : -20), y: py, w: 22, h: 18 };
     for (const e of G.enemies) {
       if (e.hp <= 0) continue;
       if (G.overlap(box, { x: e.x, y: e.y, w: e.w, h: e.h })) {
