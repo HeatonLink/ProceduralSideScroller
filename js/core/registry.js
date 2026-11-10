@@ -1,7 +1,6 @@
 (function (G) {
   G.levels = [];
 
-  // Default prototypes. Missing fields are filled from these.
   G.ENEMY_DEFAULT = {
     x: 0, y: 0, vx: 1, w: 32, h: 64, hp: 40,
     dir: 1, range: 100, home: 0, anim: 0,
@@ -35,6 +34,14 @@
   G.updates = [];
   G.addUpdate = function (fn) { G.updates.push(fn); };
 
+  // One bad update must not stop the rest.
+  G.runUpdates = function () {
+    for (const fn of G.updates) {
+      try { fn(); }
+      catch (err) { console.warn("update error", err); }
+    }
+  };
+
   G.LAYERS = ["bg", "world", "items", "enemies", "npcs", "bosses", "player", "fx"];
   G.draws = Object.create(null);
   for (const layer of G.LAYERS) G.draws[layer] = [];
@@ -47,7 +54,10 @@
   G.drawLayers = function (ctx, player) {
     for (const layer of G.LAYERS) {
       const list = G.draws[layer] || [];
-      for (const fn of list) fn(ctx, player);
+      for (const fn of list) {
+        try { fn(ctx, player); }
+        catch (err) { console.warn("draw error", layer, err); }
+      }
     }
   };
 })(G);
