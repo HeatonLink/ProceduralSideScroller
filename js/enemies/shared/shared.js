@@ -47,7 +47,7 @@
 
   G.addDraw("enemies", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const e of G.enemies) {
       if (e.hp <= 0 || !e.rig || !e.rig.root) continue;
       G.drawBone(ctx, e.rig.root, e.color || "#e74c3c");
