@@ -7,7 +7,7 @@
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
-      jumpT: 0, landT: 0,
+      jumpT: 0, landT: 0, fallSpeed: 0,
       surface: "normal",
       weapon: 0,
       rig, state: "idle"
@@ -56,11 +56,20 @@
     if (p.grounded) {
       p.coyote = G.COYOTE;
       p.y = gy - p.h;
+      if (!wasGround) {
+        p.landT = 8;
+        if (p.fallSpeed > 2 && G.spawnDust) {
+          const plat = G.groundPlat;
+          const col = plat && plat.dust ? plat.dust : "#a1887f";
+          G.spawnDust(p.x + p.w / 2, p.y + p.h, p.fallSpeed, col);
+        }
+        p.fallSpeed = 0;
+      }
       p.vy = 0;
-      if (!wasGround) p.landT = 8;
     } else {
       p.coyote = Math.max(0, p.coyote - 1);
       p.vy += G.GRAVITY;
+      if (p.vy > p.fallSpeed) p.fallSpeed = p.vy;
     }
 
     if (p.buffer > 0 && p.coyote > 0 && p.knock <= 0) {
@@ -70,6 +79,7 @@
       p.grounded = false;
       p.jumpT = 6;
       p.landT = 0;
+      p.fallSpeed = 0;
       for (let i = 0; i < 4; i++) G.addParticle(p.x + 6, p.y + 18, (Math.random()-0.5)*2, -1, 16, "#aaa", 2);
     }
 
