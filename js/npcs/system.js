@@ -3,6 +3,10 @@
   G.talking = null;
   G.talkIndex = 0;
 
+  G.npcWorldX = function (npc) {
+    return (npc.gx || 0) * G.STAGE_W + (npc.homeX != null ? npc.homeX : npc.x);
+  };
+
   G.spawnNpcs = function () {
     G.npcs = [];
     const fy = G.FLOOR_Y || 480;
@@ -18,14 +22,15 @@
       if (moved) {
         npc.gx = moved.gx;
         npc.gy = moved.gy;
-        npc.x = moved.x || npc.x;
+        npc.homeX = moved.x || npc.homeX;
+        npc.x = npc.homeX;
       }
       G.npcs.push(npc);
     }
   };
 
-  G.npcInCell = function (npc) {
-    return npc.gx === G.currentGX && npc.gy === G.currentGY;
+  G.npcNear = function (npc) {
+    return Math.abs(npc.gx - G.currentGX) <= 1 && Math.abs(npc.gy - G.currentGY) <= 1;
   };
 
   G.startTalk = function (npc) {
@@ -44,8 +49,9 @@
     if (opt.to) {
       npc.gx = opt.to.gx;
       npc.gy = opt.to.gy;
-      npc.x = opt.to.x || 200;
-      G.flags["moved_" + npc.id] = { gx: npc.gx, gy: npc.gy, x: npc.x };
+      npc.homeX = opt.to.x || 200;
+      npc.x = npc.homeX;
+      G.flags["moved_" + npc.id] = { gx: npc.gx, gy: npc.gy, x: npc.homeX };
     }
     G.talking = null;
     if (G.saveRun) G.saveRun();
@@ -65,8 +71,10 @@
     }
     if (G.justPressed("KeyE") || G.justPressed("Enter")) {
       for (const npc of G.npcs) {
-        if (!G.npcInCell(npc)) continue;
-        if (Math.abs(G.player.x - npc.x) < 60 && Math.abs(G.player.y - npc.y) < 80) {
+        if (!G.npcNear(npc)) continue;
+        const nx = G.npcWorldX(npc);
+        const ny = (npc.gy || 0) * G.STAGE_H + npc.y;
+        if (Math.abs(G.player.x - nx) < 60 && Math.abs(G.player.y - ny) < 80) {
           G.startTalk(npc);
           return;
         }
@@ -78,7 +86,9 @@
     ctx.save();
     ctx.translate(-G.camX, -G.camY);
     for (const npc of (G.npcs || [])) {
-      if (!G.npcInCell(npc)) continue;
+      if (!G.npcNear(npc)) continue;
+      const nx = G.npcWorldX(npc);
+      const ny = (npc.gy || 0) * G.STAGE_H + npc.y;
       if (npc.rig) {
         const r = npc.rig;
         setAng(r.torso, -90);
@@ -87,16 +97,16 @@
         setAng(r.rArm, -15); setAng(r.rFore, -8);
         setAng(r.lThigh, 88); setAng(r.lShin, 4);
         setAng(r.rThigh, 92); setAng(r.rShin, -4);
-        G.pose(r.root, npc.x + 16, npc.y + 18, 0);
+        G.pose(r.root, nx + 16, ny + 18, 0);
         G.drawBone(ctx, r.root, npc.color || "#27ae60");
       } else {
         ctx.fillStyle = npc.color || "#27ae60";
-        ctx.fillRect(npc.x, npc.y, npc.w, npc.h);
+        ctx.fillRect(nx, ny, npc.w, npc.h);
       }
       ctx.fillStyle = "#fff";
       ctx.font = "12px system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(npc.name, npc.x + 16, npc.y - 8);
+      ctx.fillText(npc.name, nx + 16, ny - 8);
     }
     ctx.restore();
 
