@@ -13,7 +13,6 @@
       npc.x = def.x;
       npc.y = 820;
       if (!npc.rig && G.makeRig) npc.rig = G.makeRig("npc", npc.scale);
-      // Restore location from flag if previously moved
       const moved = G.flags["moved_" + npc.id];
       if (moved) {
         npc.gx = moved.gx;
@@ -61,7 +60,6 @@
       if (G.justPressed("Escape")) G.talking = null;
       return;
     }
-    // Interact
     if (G.justPressed("KeyE") || G.justPressed("Enter")) {
       for (const npc of G.npcs) {
         if (!G.npcInCell(npc)) continue;
@@ -75,7 +73,7 @@
 
   G.addDraw("npcs", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const npc of (G.npcs || [])) {
       if (!G.npcInCell(npc)) continue;
       if (npc.rig) {
@@ -93,7 +91,6 @@
     }
     ctx.restore();
 
-    // Dialogue box
     if (G.talking) {
       const npc = G.talking;
       ctx.fillStyle = "rgba(0,0,0,0.8)";
@@ -111,7 +108,6 @@
     }
   });
 
-  // Spawn on start
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", G.spawnNpcs);
   } else {
