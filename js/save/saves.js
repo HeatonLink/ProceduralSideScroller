@@ -110,6 +110,7 @@
     G.visited = data.visited || {};
     G.enemyState = data.enemies || {};
     G.worldState = data.world || {};
+    G.gridLevels = Object.create(null);
     if (G.loadGrid) G.loadGrid(data.gx || 0, data.gy || 0);
     else if (G.loadLevel) G.loadLevel(data.level || 0);
     if (G.rebuildActive) G.rebuildActive();
