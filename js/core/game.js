@@ -11,6 +11,7 @@
       G.score = 0;
       G.inventory = {};
       G.visited = {};
+      G.status = { burn: 0, freeze: 0, poison: 0, slow: 0, stun: 0, bleed: 0, shock: 0 };
       if (G.loadGrid) G.loadGrid(0, 0);
       else if (G.loadLevel) G.loadLevel(0);
       for (const e of (G.enemies || [])) { e.hp = e.hp || 40; e.x = e.home; }
@@ -75,7 +76,8 @@
     for (const e of (G.enemies || [])) {
       if (e.hp <= 0) continue;
       if (G.overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: e.x, y: e.y, w: e.w, h: e.h })) {
-        if (!(G.flags && G.flags.shield > 0)) p.hp -= 0.5;
+        if (G.applyAttack) G.applyAttack(e, p);
+        else if (!(G.flags && G.flags.shield > 0)) p.hp -= 0.5;
         if (p.hp <= 0) {
           G.state = "dead";
           document.getElementById("dead").classList.remove("hidden");
