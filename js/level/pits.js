@@ -1,5 +1,4 @@
 (function (G) {
-  // Pit traps: walk over the trigger and the ground section is removed.
   G.pits = [];
 
   G.addPit = function (x, w, platformIndex) {
@@ -12,17 +11,14 @@
     const plats = G.platforms || [];
     const ground = plats[pit.platformIndex];
     if (!ground) return;
-    // Split the ground: left piece, gap, right piece
     const leftW = Math.max(0, pit.x - ground.x);
     const rightX = pit.x + pit.w;
     const rightW = Math.max(0, (ground.x + ground.w) - rightX);
     const y = ground.y;
     const h = ground.h;
-    // Replace the original ground with left + right
     plats.splice(pit.platformIndex, 1);
     if (leftW > 8) plats.unshift({ x: ground.x, y, w: leftW, h });
     if (rightW > 8) plats.push({ x: rightX, y, w: rightW, h });
-    // Particles to show the collapse
     for (let i = 0; i < 12; i++) {
       G.addParticle(pit.x + Math.random() * pit.w, y, (Math.random() - 0.5) * 4, -2, 30, "#8d6e63", 4);
     }
@@ -39,13 +35,11 @@
     }
   };
 
-  // Draw open pits as dark gaps (already no platform, but mark the danger)
   G.addDraw("world", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const pit of G.pits) {
       if (!pit.open) {
-        // Subtle warning cracks
         ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.lineWidth = 2;
         ctx.beginPath();
