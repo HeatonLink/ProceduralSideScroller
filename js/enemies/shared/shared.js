@@ -36,10 +36,11 @@
       else e.y += 2;
       const r = e.rig;
       if (!r || !r.root) continue;
-      const s = Math.sin(e.anim * 0.06);
-      setAng(r.lThigh, 90 + 18 * s); setAng(r.rThigh, 90 - 18 * s);
-      setAng(r.lShin, Math.max(0, 10 - 6 * s)); setAng(r.rShin, Math.max(0, 10 + 6 * s));
-      setAng(r.lArm, -12 * s); setAng(r.rArm, 12 * s);
+      const s = Math.sin(e.anim * 0.05);
+      setAng(r.lThigh, 90 + 16 * s); setAng(r.rThigh, 90 - 16 * s);
+      setAng(r.lShin, Math.max(0, 8 - 5 * s)); setAng(r.rShin, Math.max(0, 8 + 5 * s));
+      setAng(r.lArm, -10 * s); setAng(r.rArm, 10 * s);
+      setAng(r.lFore, 6); setAng(r.rFore, -6);
       setAng(r.torso, -90);
       G.pose(r.root, e.x + (e.w || 32) / 2, e.y + 18, 0);
     }
@@ -53,8 +54,9 @@
       G.drawBone(ctx, e.rig.root, e.color || "#e74c3c");
       const h = e.rig.head;
       if (!h) continue;
-      const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
-      const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
+      const a = h.world != null ? h.world : h.ang;
+      const hx = h.x + Math.cos(a * Math.PI / 180) * h.len;
+      const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
       ctx.fillStyle = "#f5b7b1";
       ctx.beginPath();
       ctx.arc(hx, hy - 6, 10, 0, Math.PI * 2);
