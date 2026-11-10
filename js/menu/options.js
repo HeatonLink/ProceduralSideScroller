@@ -46,6 +46,20 @@
     { id: "vsync", label: "VSync", type: "toggle" }
   ];
 
+  G.optButtons = function () {
+    return G.OPT_ITEMS.map((item, i) => {
+      const y = 140 + i * 55;
+      return { ...item, x: 180, y: y - 28, w: 600, h: 48, barX: 450, barY: y - 10, barW: 200 };
+    });
+  };
+
+  G.displayButtons = function () {
+    return G.DISPLAY_ITEMS.map((item, i) => {
+      const y = 180 + i * 55;
+      return { ...item, x: 160, y: y - 28, w: 640, h: 48 };
+    });
+  };
+
   G.applyDisplay = function () {
     const d = G.display;
     if (G.canvas) {
@@ -61,6 +75,54 @@
     G.particlesEnabled = d.particles;
   };
 
+  G.clickOptions = function (x, y) {
+    if (G.subState === "display") return G.clickDisplay(x, y);
+    if (G.subState === "binds") return;
+    const buttons = G.optButtons();
+    for (let i = 0; i < buttons.length; i++) {
+      const b = buttons[i];
+      if (x < b.x || x > b.x + b.w || y < b.y || y > b.y + b.h) continue;
+      G.optIndex = i;
+      if (b.type === "volume") {
+        const t = Math.max(0, Math.min(1, (x - b.barX) / b.barW));
+        G.volume[b.id] = t;
+      }
+      if (b.type === "menu") {
+        G.subState = b.id;
+        G.optIndex = 0;
+      }
+      return;
+    }
+  };
+
+  G.clickDisplay = function (x, y) {
+    const buttons = G.displayButtons();
+    for (let i = 0; i < buttons.length; i++) {
+      const b = buttons[i];
+      if (x < b.x || x > b.x + b.w || y < b.y || y > b.y + b.h) continue;
+      G.optIndex = i;
+      if (b.type === "toggle") G.display[b.id] = !G.display[b.id];
+      if (b.type === "cycle") {
+        const vals = b.values;
+        let idx = vals.indexOf(G.display[b.id]);
+        G.display[b.id] = vals[(idx + 1) % vals.length];
+      }
+      G.applyDisplay();
+      return;
+    }
+  };
+
+  G.hoverOptions = function (x, y) {
+    const list = G.subState === "display" ? G.displayButtons() : G.optButtons();
+    for (let i = 0; i < list.length; i++) {
+      const b = list[i];
+      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        G.optIndex = i;
+        return;
+      }
+    }
+  };
+
   G.drawOptions = function (ctx) {
     ctx.fillStyle = "rgba(0,0,0,0.75)";
     ctx.fillRect(0, 0, G.W, G.H);
@@ -72,30 +134,29 @@
     if (G.subState === "binds") { G.drawBinds(ctx); return; }
     if (G.subState === "display") { G.drawDisplay(ctx); return; }
 
-    G.OPT_ITEMS.forEach((item, i) => {
-      const y = 140 + i * 55;
+    G.optButtons().forEach((b, i) => {
       const on = i === G.optIndex;
       ctx.fillStyle = on ? "#4a90d9" : "rgba(40,50,70,0.9)";
-      ctx.fillRect(180, y - 28, 600, 48);
+      ctx.fillRect(b.x, b.y, b.w, b.h);
       ctx.fillStyle = "#fff";
       ctx.font = "20px system-ui, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(item.label, 200, y);
-      if (item.type === "volume") {
-        const v = G.volume[item.id];
+      ctx.fillText(b.label, b.x + 20, b.y + 30);
+      if (b.type === "volume") {
+        const v = G.volume[b.id];
         ctx.fillStyle = "#333";
-        ctx.fillRect(450, y - 10, 200, 12);
+        ctx.fillRect(b.barX, b.barY, b.barW, 12);
         ctx.fillStyle = "#4caf50";
-        ctx.fillRect(450, y - 10, 200 * v, 12);
+        ctx.fillRect(b.barX, b.barY, b.barW * v, 12);
         ctx.fillStyle = "#fff";
         ctx.textAlign = "right";
-        ctx.fillText(Math.round(v * 100) + "%", 680, y);
+        ctx.fillText(Math.round(v * 100) + "%", b.x + b.w - 20, b.y + 30);
       }
     });
     ctx.textAlign = "center";
     ctx.fillStyle = "#aaa";
     ctx.font = "16px system-ui, sans-serif";
-    ctx.fillText("Arrows to select  ·  Left/Right to adjust  ·  Enter to open  ·  Esc to back", G.W / 2, G.H - 40);
+    ctx.fillText("Click a row  ·  Esc to back", G.W / 2, G.H - 40);
   };
 
   G.drawDisplay = function (ctx) {
@@ -104,26 +165,25 @@
     ctx.textAlign = "center";
     ctx.fillText("DISPLAY", G.W / 2, 120);
 
-    G.DISPLAY_ITEMS.forEach((item, i) => {
-      const y = 180 + i * 55;
+    G.displayButtons().forEach((b, i) => {
       const on = i === G.optIndex;
       ctx.fillStyle = on ? "#4a90d9" : "rgba(40,50,70,0.9)";
-      ctx.fillRect(160, y - 28, 640, 48);
+      ctx.fillRect(b.x, b.y, b.w, b.h);
       ctx.fillStyle = "#fff";
       ctx.font = "20px system-ui, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(item.label, 180, y);
+      ctx.fillText(b.label, b.x + 20, b.y + 30);
       ctx.textAlign = "right";
-      const val = G.display[item.id];
+      const val = G.display[b.id];
       let text = String(val);
-      if (item.type === "toggle") text = val ? "On" : "Off";
-      if (item.id === "scale") text = val + "x";
-      ctx.fillText(text, 760, y);
+      if (b.type === "toggle") text = val ? "On" : "Off";
+      if (b.id === "scale") text = val + "x";
+      ctx.fillText(text, b.x + b.w - 20, b.y + 30);
     });
     ctx.textAlign = "center";
     ctx.fillStyle = "#aaa";
     ctx.font = "16px system-ui, sans-serif";
-    ctx.fillText("Left/Right to change  ·  Esc to back", G.W / 2, G.H - 40);
+    ctx.fillText("Click to change  ·  Esc to back", G.W / 2, G.H - 40);
   };
 
   G.drawBinds = function (ctx) {
