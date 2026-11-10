@@ -1,5 +1,5 @@
 (function (G) {
-  G.SPRING_POWER = -22; // much higher than normal jump (-14)
+  G.SPRING_POWER = -22;
   G.springs = [];
 
   G.addSpring = function (x, y, w) {
@@ -29,13 +29,11 @@
 
   G.addDraw("world", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const s of G.springs) {
       const squish = s.anim > 0 ? 4 : 0;
-      // Base
       ctx.fillStyle = "#795548";
       ctx.fillRect(s.x, s.y + s.h - 4 + squish, s.w, 4);
-      // Coil
       ctx.strokeStyle = "#ffeb3b";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -48,7 +46,6 @@
         else ctx.lineTo(xx, yy);
       }
       ctx.stroke();
-      // Top pad
       ctx.fillStyle = s.anim > 0 ? "#fff59d" : "#fdd835";
       ctx.fillRect(s.x - 2, s.y + squish, s.w + 4, 6);
     }
