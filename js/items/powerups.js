@@ -28,7 +28,7 @@
     if (!p) return;
     for (const pu of G.powerups) {
       if (pu.got) continue;
-      if (Math.abs(p.x + 18 - pu.x) < 24 && Math.abs(p.y + 30 - pu.y) < 30) {
+      if (Math.abs(p.x + p.w / 2 - pu.x) < 24 && Math.abs(p.y + p.h / 2 - pu.y) < 30) {
         G.collectPowerup(pu);
       }
     }
@@ -36,7 +36,7 @@
 
   G.addDraw("items", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const pu of G.powerups) {
       if (pu.got) continue;
       const def = G.POWERUP_TYPES[pu.type] || { color: "#fff" };
@@ -57,7 +57,6 @@
 
   G.addUpdate(function () {
     if (G.state === "play" && G.player) G.checkPowerups(G.player);
-    // Apply timed effects
     if (G.flags.speed_boost > 0) G.flags.speed_boost--;
     if (G.flags.shield > 0) G.flags.shield--;
   });
