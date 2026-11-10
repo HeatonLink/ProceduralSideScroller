@@ -46,6 +46,8 @@
       coins: (G.coins || []).map(c => !!c.got),
       enemies: (G.enemies || []).map(e => ({ hp: e.hp, x: e.x })),
       flags: G.flags || {},
+      inventory: G.inventory || {},
+      visited: G.visited || {},
       updated: Date.now()
     };
   }
@@ -54,6 +56,8 @@
     if (!data) return;
     G.score = data.score || 0;
     G.flags = data.flags || {};
+    G.inventory = data.inventory || {};
+    G.visited = data.visited || {};
     if (G.loadGrid) G.loadGrid(data.gx || 0, data.gy || 0);
     else if (G.loadLevel) G.loadLevel(data.level || 0);
     const p = G.player || G.makePlayer();
@@ -99,6 +103,8 @@
     G.activeSave = id;
     G.score = 0;
     G.flags = {};
+    G.inventory = {};
+    G.visited = {};
     G.player = null;
     G.saveRun();
     return id;
