@@ -1,27 +1,30 @@
 (function (G) {
-  // Simple bone: length, local angle, width
+  // ang is the local angle. world is the posed angle used for drawing.
   G.Bone = function (len, w) {
     this.len = len;
     this.w = w || 8;
     this.ang = 0;
+    this.world = 0;
     this.x = 0;
     this.y = 0;
     this.children = [];
   };
   G.Bone.prototype.add = function (b) { this.children.push(b); return b; };
 
-  G.pose = function (bone, x, y, a) {
+  // parentWorld is the parent's world angle. Does not overwrite local ang.
+  G.pose = function (bone, x, y, parentWorld) {
     bone.x = x;
     bone.y = y;
-    bone.ang = a;
-    const rad = a * Math.PI / 180;
+    bone.world = parentWorld + bone.ang;
+    const rad = bone.world * Math.PI / 180;
     const nx = x + Math.cos(rad) * bone.len;
     const ny = y + Math.sin(rad) * bone.len;
-    for (const c of bone.children) G.pose(c, nx, ny, a + c.ang);
+    for (const c of bone.children) G.pose(c, nx, ny, bone.world);
   };
 
   G.drawBone = function (ctx, bone, color) {
-    const rad = bone.ang * Math.PI / 180;
+    const a = bone.world != null ? bone.world : bone.ang;
+    const rad = a * Math.PI / 180;
     const x2 = bone.x + Math.cos(rad) * bone.len;
     const y2 = bone.y + Math.sin(rad) * bone.len;
     ctx.strokeStyle = color;
@@ -34,7 +37,6 @@
     for (const c of bone.children) G.drawBone(ctx, c, color);
   };
 
-  // Build a humanoid rig (default)
   G.makeHuman = function (scale) {
     scale = scale || 1;
     const root = new G.Bone(0, 0);
@@ -51,7 +53,6 @@
     return { root, torso, head, lArm, lFore, rArm, rFore, lThigh, lShin, rThigh, rShin };
   };
 
-  // Registry for per-character rigs. Falls back to makeHuman if none registered.
   G.rigMakers = Object.create(null);
   G.makeRig = function (name, scale) {
     const maker = G.rigMakers[name] || G.makeHuman;
