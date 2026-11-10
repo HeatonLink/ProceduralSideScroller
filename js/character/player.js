@@ -86,6 +86,14 @@
     p.x += p.vx;
     p.y += p.vy;
 
+    if (p.vy < 0 && G.hitCeiling) {
+      const bottom = G.hitCeiling(p.x, p.y, p.w, p.h);
+      if (bottom != null) {
+        p.y = bottom;
+        p.vy = 0;
+      }
+    }
+
     if (atk && p.attack <= 0) p.attack = 18;
     if (p.attack > 0) p.attack--;
 
