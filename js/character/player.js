@@ -3,7 +3,7 @@
     const rig = G.makeRig("player", 1);
     const floor = G.FLOOR_Y || 480;
     return {
-      x: 80, y: floor - 48, vx: 0, vy: 0, w: 36, h: 48,
+      x: 80, y: floor - 28, vx: 0, vy: 0, w: 20, h: 28,
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
@@ -131,12 +131,11 @@
     if (!(player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0)) {
       const cx = player.x + player.w / 2;
       const cy = player.y + player.h * 0.45;
-      // Bright body so the player is always visible
       ctx.fillStyle = "#ff9800";
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(cx, cy, 14, 16, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, 7, 8, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
       if (player.rig && player.rig.root) {
@@ -150,12 +149,12 @@
           const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
           ctx.fillStyle = "#ffcc80";
           ctx.beginPath();
-          ctx.arc(hx, hy - 2, 9, 0, Math.PI * 2);
+          ctx.arc(hx, hy - 1, 5, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = "#fff";
           ctx.beginPath();
-          ctx.arc(hx - 7, hy - 9, 6, 0, Math.PI * 2);
-          ctx.arc(hx + 7, hy - 9, 6, 0, Math.PI * 2);
+          ctx.arc(hx - 4, hy - 5, 3, 0, Math.PI * 2);
+          ctx.arc(hx + 4, hy - 5, 3, 0, Math.PI * 2);
           ctx.fill();
         }
       }
