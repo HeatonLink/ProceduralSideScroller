@@ -7,6 +7,7 @@
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
+      jumpT: 0, landT: 0,
       surface: "normal",
       weapon: 0,
       rig, state: "idle"
@@ -23,6 +24,8 @@
     p.anim += dt;
     if (p.iFrames > 0) p.iFrames--;
     if (p.knock > 0) p.knock--;
+    if (p.jumpT > 0) p.jumpT--;
+    if (p.landT > 0) p.landT--;
 
     const left = act("left") || G.pressed("KeyA") || G.pressed("ArrowLeft");
     const right = act("right") || G.pressed("KeyD") || G.pressed("ArrowRight");
@@ -47,12 +50,14 @@
     if (jump) p.buffer = G.BUFFER;
     if (p.buffer > 0) p.buffer--;
 
+    const wasGround = p.grounded;
     const gy = G.onGround(p.x, p.y, p.w, p.h);
     p.grounded = gy !== null;
     if (p.grounded) {
       p.coyote = G.COYOTE;
       p.y = gy - p.h;
       p.vy = 0;
+      if (!wasGround) p.landT = 8;
     } else {
       p.coyote = Math.max(0, p.coyote - 1);
       p.vy += G.GRAVITY;
@@ -63,6 +68,8 @@
       p.buffer = 0;
       p.coyote = 0;
       p.grounded = false;
+      p.jumpT = 6;
+      p.landT = 0;
       for (let i = 0; i < 4; i++) G.addParticle(p.x + 6, p.y + 18, (Math.random()-0.5)*2, -1, 16, "#aaa", 2);
     }
 
@@ -75,8 +82,12 @@
     if (p.attack > 0) p.attack--;
 
     if (p.attack > 0) p.state = "attack";
-    else if (!p.grounded) p.state = p.vy < 0 ? "jump" : "fall";
-    else if (Math.abs(p.vx) > 0.5) p.state = "walk";
+    else if (p.landT > 0) p.state = "land";
+    else if (!p.grounded) {
+      if (p.jumpT > 0) p.state = "jump";
+      else if (p.vy < 0) p.state = "rise";
+      else p.state = "fall";
+    } else if (Math.abs(p.vx) > 0.5) p.state = "walk";
     else p.state = "idle";
 
     G.animate(p);
@@ -88,14 +99,15 @@
     const r = p.rig;
     if (!r || !r.root) return;
     const t = p.anim * 0.15;
-    setAng(r.torso, -90 + Math.sin(t * 2) * 2);
+    const face = p.facing < 0 ? -1 : 1;
+    setAng(r.torso, -90);
     setAng(r.head, 0);
     setAng(r.lEar, -50);
     setAng(r.rEar, 50);
-    if (r.tail) setAng(r.tail, 160 + Math.sin(t * 4) * 8);
+    if (r.tail) setAng(r.tail, 160);
     setAng(r.tail2, 20);
-    setAng(r.lArm, 20); setAng(r.lFore, 10);
-    setAng(r.rArm, -20); setAng(r.rFore, -10);
+    setAng(r.lArm, 20 * face); setAng(r.lFore, 10);
+    setAng(r.rArm, -20 * face); setAng(r.rFore, -10);
     setAng(r.lThigh, 85); setAng(r.lShin, 8);
     setAng(r.rThigh, 95); setAng(r.rShin, -6);
 
@@ -103,17 +115,34 @@
       const s = Math.sin(t * 10);
       setAng(r.lThigh, 90 + 28 * s); setAng(r.lShin, Math.max(0, 12 - 15 * s));
       setAng(r.rThigh, 90 - 28 * s); setAng(r.rShin, Math.max(0, 12 + 15 * s));
-      setAng(r.lArm, -22 * s); setAng(r.rArm, 22 * s);
+      setAng(r.lArm, -22 * s * face); setAng(r.rArm, 22 * s * face);
       setAng(r.torso, -90 + s * 4);
       if (r.tail) setAng(r.tail, 160 + s * 12);
     } else if (p.state === "jump") {
-      setAng(r.lArm, -40); setAng(r.rArm, -40);
-      setAng(r.lThigh, 70); setAng(r.rThigh, 110);
-      setAng(r.lShin, 40); setAng(r.rShin, 35);
+      setAng(r.torso, -100);
+      setAng(r.lArm, -50); setAng(r.rArm, -50);
+      setAng(r.lThigh, 60); setAng(r.rThigh, 120);
+      setAng(r.lShin, 50); setAng(r.rShin, 45);
+      if (r.tail) setAng(r.tail, 130);
+    } else if (p.state === "rise") {
+      setAng(r.torso, -95);
+      setAng(r.lArm, -30); setAng(r.rArm, -30);
+      setAng(r.lThigh, 75); setAng(r.rThigh, 105);
+      setAng(r.lShin, 20); setAng(r.rShin, 15);
+      if (r.tail) setAng(r.tail, 145);
     } else if (p.state === "fall") {
-      setAng(r.lArm, 25); setAng(r.rArm, 25);
-      setAng(r.lThigh, 80); setAng(r.rThigh, 100);
-      setAng(r.lShin, 15); setAng(r.rShin, 10);
+      setAng(r.torso, -80);
+      setAng(r.lArm, 40); setAng(r.rArm, 40);
+      setAng(r.lFore, 20); setAng(r.rFore, -20);
+      setAng(r.lThigh, 100); setAng(r.rThigh, 80);
+      setAng(r.lShin, 10); setAng(r.rShin, 25);
+      if (r.tail) setAng(r.tail, 190);
+    } else if (p.state === "land") {
+      setAng(r.torso, -75);
+      setAng(r.lArm, 30); setAng(r.rArm, 30);
+      setAng(r.lThigh, 110); setAng(r.rThigh, 70);
+      setAng(r.lShin, 40); setAng(r.rShin, 35);
+      if (r.tail) setAng(r.tail, 175);
     } else if (p.state === "attack" && G.weaponPose) {
       G.weaponPose(r, p);
     } else if (p.state === "attack") {
@@ -128,37 +157,44 @@
     if (!player) return;
     ctx.save();
     ctx.translate(-G.camX, -G.camY);
-    if (!(player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0)) {
-      const cx = player.x + player.w / 2;
-      const cy = player.y + player.h * 0.45;
-      ctx.fillStyle = "#ff9800";
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, 7, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      if (player.rig && player.rig.root) {
-        const w = G.currentWeapon ? G.currentWeapon() : { color: "#5d4037" };
-        const col = player.attack > 0 ? w.color : "#5d4037";
-        G.drawBone(ctx, player.rig.root, col);
-        const h = player.rig.head;
-        if (h) {
-          const a = h.world != null ? h.world : h.ang;
-          const hx = h.x + Math.cos(a * Math.PI / 180) * h.len;
-          const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
-          ctx.fillStyle = "#ffcc80";
-          ctx.beginPath();
-          ctx.arc(hx, hy - 1, 5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = "#fff";
-          ctx.beginPath();
-          ctx.arc(hx - 4, hy - 5, 3, 0, Math.PI * 2);
-          ctx.arc(hx + 4, hy - 5, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
+    if (player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0) {
+      ctx.restore();
+      return;
+    }
+    const cx = player.x + player.w / 2;
+    const cy = player.y + player.h * 0.45;
+    const face = player.facing < 0 ? -1 : 1;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(face, 1);
+    ctx.translate(-cx, -cy);
+    ctx.fillStyle = "#ff9800";
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 7, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    if (player.rig && player.rig.root) {
+      const w = G.currentWeapon ? G.currentWeapon() : { color: "#5d4037" };
+      const col = player.attack > 0 ? w.color : "#5d4037";
+      G.drawBone(ctx, player.rig.root, col);
+      const h = player.rig.head;
+      if (h) {
+        const a = h.world != null ? h.world : h.ang;
+        const hx = h.x + Math.cos(a * Math.PI / 180) * h.len;
+        const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
+        ctx.fillStyle = "#ffcc80";
+        ctx.beginPath();
+        ctx.arc(hx, hy - 1, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(hx + face * 3, hy - 5, 3, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
+    ctx.restore();
     ctx.restore();
   });
 
