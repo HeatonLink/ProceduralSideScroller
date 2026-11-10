@@ -23,6 +23,13 @@
     return -1;
   }
 
+  canvas.addEventListener("mousemove", e => {
+    if (G.state !== "pause" || G.subState) return;
+    const p = canvasPos(e);
+    const i = hit(G.pauseButtons(), p.x, p.y);
+    if (i >= 0) G.pauseIndex = i;
+  });
+
   canvas.addEventListener("click", e => {
     const p = canvasPos(e);
     if (G.state === "menu" && !G.subState) {
