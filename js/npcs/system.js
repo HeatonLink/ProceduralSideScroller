@@ -51,6 +51,8 @@
     if (G.saveRun) G.saveRun();
   };
 
+  function setAng(bone, ang) { if (bone) bone.ang = ang; }
+
   G.addUpdate(function () {
     if (G.state !== "play" || !G.player) return;
     if (G.talking) {
@@ -78,9 +80,15 @@
     for (const npc of (G.npcs || [])) {
       if (!G.npcInCell(npc)) continue;
       if (npc.rig) {
-        npc.rig.torso.ang = -90;
-        G.pose(npc.rig.root, npc.x + 16, npc.y + 18, 0);
-        G.drawBone(ctx, npc.rig.root, npc.color || "#27ae60");
+        const r = npc.rig;
+        setAng(r.torso, -90);
+        setAng(r.head, 0);
+        setAng(r.lArm, 15); setAng(r.lFore, 8);
+        setAng(r.rArm, -15); setAng(r.rFore, -8);
+        setAng(r.lThigh, 88); setAng(r.lShin, 4);
+        setAng(r.rThigh, 92); setAng(r.rShin, -4);
+        G.pose(r.root, npc.x + 16, npc.y + 18, 0);
+        G.drawBone(ctx, r.root, npc.color || "#27ae60");
       } else {
         ctx.fillStyle = npc.color || "#27ae60";
         ctx.fillRect(npc.x, npc.y, npc.w, npc.h);
