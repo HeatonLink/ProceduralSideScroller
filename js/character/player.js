@@ -1,8 +1,8 @@
 (function (G) {
   G.makePlayer = function () {
-    const rig = G.makeRig("player", 1);
+    const rig = G.makeRig("player", 1); // maker already applies 0.25
     return {
-      x: 80, y: 500, vx: 0, vy: 0, w: 36, h: 72,
+      x: 80, y: 800, vx: 0, vy: 0, w: 12, h: 20, // quarter of 36x72-ish
       hp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       surface: "normal",
@@ -43,7 +43,7 @@
       p.buffer = 0;
       p.coyote = 0;
       p.grounded = false;
-      for (let i = 0; i < 6; i++) G.addParticle(p.x + 18, p.y + 70, (Math.random()-0.5)*3, -1, 20, "#aaa", 3);
+      for (let i = 0; i < 4; i++) G.addParticle(p.x + 6, p.y + 18, (Math.random()-0.5)*2, -1, 16, "#aaa", 2);
     }
 
     p.x += p.vx;
@@ -66,17 +66,22 @@
     const t = p.anim * 0.15;
     r.torso.ang = -90 + Math.sin(t * 2) * 2;
     r.head.ang = 0;
+    // Ears up
+    if (r.lEar) { r.lEar.ang = -50; r.rEar.ang = 50; }
+    // Tail back
+    if (r.tail) { r.tail.ang = 160 + Math.sin(t * 4) * 8; r.tail2.ang = 20; }
     r.lArm.ang = 20; r.lFore.ang = 10;
     r.rArm.ang = -20; r.rFore.ang = -10;
     r.lThigh.ang = 85; r.lShin.ang = 8;
     r.rThigh.ang = 95; r.rShin.ang = -6;
 
     if (p.state === "walk") {
-      const s = Math.sin(t * 8);
+      const s = Math.sin(t * 10);
       r.lThigh.ang = 90 + 28 * s; r.lShin.ang = Math.max(0, 12 - 15 * s);
       r.rThigh.ang = 90 - 28 * s; r.rShin.ang = Math.max(0, 12 + 15 * s);
       r.lArm.ang = -22 * s; r.rArm.ang = 22 * s;
       r.torso.ang = -90 + s * 4;
+      if (r.tail) r.tail.ang = 160 + s * 12;
     } else if (p.state === "jump") {
       r.lArm.ang = -40; r.rArm.ang = -40;
       r.lThigh.ang = 70; r.rThigh.ang = 110;
@@ -90,21 +95,38 @@
       r.rArm.ang = -20 - 90 * a;
       r.rFore.ang = -30 * a;
     }
-    G.pose(r.root, p.x + 18, p.y + 20, 0);
+    G.pose(r.root, p.x + 6, p.y + 6, 0);
   };
 
   G.addDraw("player", function (ctx, player) {
     if (!player) return;
     ctx.save();
     ctx.translate(-G.camX, 0);
-    const col = player.attack > 0 ? "#ffcc44" : "#4a90d9";
+    const col = player.attack > 0 ? "#ffcc44" : "#8d6e63"; // mouse brown
     G.drawBone(ctx, player.rig.root, col);
     const h = player.rig.head;
     const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
     const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
-    ctx.fillStyle = "#f5d7b5";
+    // Round head
+    ctx.fillStyle = "#a1887f";
     ctx.beginPath();
-    ctx.arc(hx, hy - 8, 12, 0, Math.PI * 2);
+    ctx.arc(hx, hy - 2, 5, 0, Math.PI * 2);
+    ctx.fill();
+    // Ears
+    ctx.fillStyle = "#d7ccc8";
+    ctx.beginPath();
+    ctx.arc(hx - 4, hy - 6, 3.5, 0, Math.PI * 2);
+    ctx.arc(hx + 4, hy - 6, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Snout
+    ctx.fillStyle = "#efebe9";
+    ctx.beginPath();
+    ctx.arc(hx + 3, hy, 2, 0, Math.PI * 2);
+    ctx.fill();
+    // Eye
+    ctx.fillStyle = "#212121";
+    ctx.beginPath();
+    ctx.arc(hx + 1, hy - 2, 1.2, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   });
