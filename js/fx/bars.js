@@ -13,7 +13,7 @@
 
   G.addDraw("fx", function (ctx, player) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     if (player && player.hp > 0) {
       G.drawBar(ctx, player.x, player.y - 8, 16, player.hp, player.maxHp || G.MAX_HP);
     }
