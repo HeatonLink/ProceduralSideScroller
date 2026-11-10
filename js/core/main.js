@@ -23,11 +23,18 @@
     return -1;
   }
 
+  function inOptions() {
+    return G.subState === "options" || G.subState === "display" || G.subState === "binds";
+  }
+
   canvas.addEventListener("mousemove", e => {
-    if (G.state !== "pause" || G.subState) return;
     const p = canvasPos(e);
-    const i = hit(G.pauseButtons(), p.x, p.y);
-    if (i >= 0) G.pauseIndex = i;
+    if (G.state === "pause" && !G.subState) {
+      const i = hit(G.pauseButtons(), p.x, p.y);
+      if (i >= 0) G.pauseIndex = i;
+      return;
+    }
+    if (inOptions() && G.hoverOptions) G.hoverOptions(p.x, p.y);
   });
 
   canvas.addEventListener("click", e => {
@@ -43,6 +50,10 @@
     if (G.state !== "pause") return;
     if (G.subState === "inventory" || G.subState === "map") {
       G.subState = null;
+      return;
+    }
+    if (inOptions() && G.clickOptions) {
+      G.clickOptions(p.x, p.y);
       return;
     }
     if (G.subState) return;
