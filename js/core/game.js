@@ -14,6 +14,8 @@
       G.visited = {};
       G.status = { burn: 0, freeze: 0, poison: 0, slow: 0, stun: 0, bleed: 0, shock: 0 };
       for (const e of (G.enemies || [])) { e.hp = e.maxHp || e.hp || 40; e.x = e.home; }
+      if (G.setOrigin) G.setOrigin(0, 0);
+      if (G.setRespawn) G.setRespawn(0, 0);
       if (!G.activeSave && G.createSave) G.createSave();
       G.gridLevels = Object.create(null);
     }
