@@ -2,7 +2,7 @@
   G.makePlayer = function () {
     const rig = G.makeRig("player", 1);
     return {
-      x: 80, y: 800, vx: 0, vy: 0, w: 12, h: 20,
+      x: 120, y: 860, vx: 0, vy: 0, w: 18, h: 28,
       hp: G.MAX_HP, maxHp: G.MAX_HP, facing: 1, grounded: false,
       coyote: 0, buffer: 0, attack: 0, anim: 0,
       iFrames: 0, knock: 0,
@@ -35,7 +35,6 @@
     p.surface = G.surfaceAt ? G.surfaceAt(p.x, p.y, p.w, p.h) : "normal";
     const speed = G.speedFor ? G.speedFor(p.surface) : G.SPEED;
 
-    // Ignore input while knocked back
     if (p.knock <= 0) {
       if (left) { p.vx = -speed; p.facing = -1; }
       else if (right) { p.vx = speed; p.facing = 1; }
@@ -127,8 +126,7 @@
   G.addDraw("player", function (ctx, player) {
     if (!player || !player.rig || !player.rig.root) return;
     ctx.save();
-    ctx.translate(-G.camX, 0);
-    // Flash while invincible
+    ctx.translate(-G.camX, -G.camY);
     if (player.iFrames > 0 && Math.floor(player.iFrames / 3) % 2 === 0) {
       ctx.restore();
       return;
@@ -142,20 +140,20 @@
       const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
       ctx.fillStyle = "#a1887f";
       ctx.beginPath();
-      ctx.arc(hx, hy - 2, 5, 0, Math.PI * 2);
+      ctx.arc(hx, hy - 2, 6, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#d7ccc8";
       ctx.beginPath();
-      ctx.arc(hx - 4, hy - 6, 3.5, 0, Math.PI * 2);
-      ctx.arc(hx + 4, hy - 6, 3.5, 0, Math.PI * 2);
+      ctx.arc(hx - 5, hy - 7, 4, 0, Math.PI * 2);
+      ctx.arc(hx + 5, hy - 7, 4, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#efebe9";
       ctx.beginPath();
-      ctx.arc(hx + 3, hy, 2, 0, Math.PI * 2);
+      ctx.arc(hx + 4, hy, 2.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#212121";
       ctx.beginPath();
-      ctx.arc(hx + 1, hy - 2, 1.2, 0, Math.PI * 2);
+      ctx.arc(hx + 1, hy - 2, 1.5, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
