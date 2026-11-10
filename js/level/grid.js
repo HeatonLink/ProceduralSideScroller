@@ -69,16 +69,18 @@
     const theme = G.themeFor(gx, gy);
     const fy = G.FLOOR_Y;
     const dust = theme.dust || "#a1887f";
-    const platforms = [{ x: 0, y: fy, w: 1000, h: 120, dust: dust, floor: true }];
+    const platforms = [{ x: 0, y: fy, w: 1000, h: 120, dust: dust, floor: true, shape: "box" }];
     for (let i = 0; i < 3; i++) {
       platforms.push({
         x: 150 + i * 250 + (Math.abs(gx) * 20 % 80),
         y: fy - 140 - i * 70,
         w: 140,
         h: 24,
-        dust: dust
+        dust: dust,
+        shape: "box"
       });
     }
+    if (G.addShapes) G.addShapes(platforms, gx, gy, fy, dust);
     const coins = [];
     for (let i = 0; i < 5; i++) {
       const st = G.stateFor(gx, gy, "coin", i);
@@ -181,7 +183,6 @@
     G.unloadFar();
   };
 
-  // Cut every platform that crosses an open pit, including the 4px cell overlap.
   function cutFloor(plats, pit) {
     const pad = 8;
     const left = pit.x - pad;
@@ -189,6 +190,7 @@
     const top = pit.y;
     const next = [];
     for (const p of plats) {
+      if (!p.floor) { next.push(p); continue; }
       if (p.y > top + 8 || p.y + p.h < top) { next.push(p); continue; }
       if (right <= p.x || left >= p.x + p.w) { next.push(p); continue; }
       if (left > p.x) next.push(Object.assign({}, p, { w: left - p.x }));
@@ -215,7 +217,12 @@
           dust: p.dust,
           floor: p.floor,
           color: lvl.color,
-          ground: lvl.ground
+          ground: lvl.ground,
+          shape: p.shape,
+          y0: p.y0 != null ? p.y0 + oy : null,
+          y1: p.y1 != null ? p.y1 + oy : null,
+          baseX: p.baseX != null ? p.baseX + ox : null,
+          range: p.range
         });
       }
       for (const pit of (lvl.pits || [])) {
