@@ -85,8 +85,6 @@
 
     p.x += p.vx;
     p.y += p.vy;
-    p.x = Math.max(0, Math.min(G.STAGE_W - p.w, p.x));
-    p.y = Math.max(0, p.y);
 
     if (atk && p.attack <= 0) p.attack = 18;
     if (p.attack > 0) p.attack--;
