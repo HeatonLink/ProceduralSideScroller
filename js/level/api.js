@@ -41,4 +41,14 @@
     G.groundPlat = null;
     return null;
   };
+
+  // Bottom of a platform the head is hitting while moving up. Null if clear.
+  G.hitCeiling = function (px, py, pw, ph) {
+    const head = { x: px + 4, y: py, w: pw - 8, h: 6 };
+    for (const p of (G.platforms || [])) {
+      if (!G.overlap(head, p)) continue;
+      if (py < p.y + p.h && py + ph > p.y + p.h) return p.y + p.h;
+    }
+    return null;
+  };
 })(G);
