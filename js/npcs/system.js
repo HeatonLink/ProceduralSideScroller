@@ -7,6 +7,18 @@
     return (npc.gx || 0) * G.STAGE_W + (npc.homeX != null ? npc.homeX : npc.x);
   };
 
+  G.npcFloor = function (npc) {
+    return (npc.gy || 0) * G.STAGE_H + (G.FLOOR_Y || 480);
+  };
+
+  G.npcDrop = function (npc) {
+    const r = npc.rig;
+    if (!r) return 40;
+    const thigh = r.lThigh ? r.lThigh.len : 24;
+    const shin = r.lShin ? r.lShin.len : 22;
+    return thigh + shin;
+  };
+
   G.spawnNpcs = function () {
     G.npcs = [];
     const fy = G.FLOOR_Y || 480;
@@ -16,8 +28,8 @@
       npc.gy = def.gy;
       npc.homeX = def.x;
       npc.x = def.x;
-      npc.y = fy - 40;
       if (!npc.rig && G.makeRig) npc.rig = G.makeRig("npc", npc.scale);
+      npc.y = fy - G.npcDrop(npc);
       const moved = G.flags["moved_" + npc.id];
       if (moved) {
         npc.gx = moved.gx;
@@ -73,8 +85,8 @@
       for (const npc of G.npcs) {
         if (!G.npcNear(npc)) continue;
         const nx = G.npcWorldX(npc);
-        const ny = (npc.gy || 0) * G.STAGE_H + npc.y;
-        if (Math.abs(G.player.x - nx) < 60 && Math.abs(G.player.y - ny) < 80) {
+        const feet = G.npcFloor(npc);
+        if (Math.abs(G.player.x - nx) < 60 && Math.abs(G.player.y + G.player.h - feet) < 40) {
           G.startTalk(npc);
           return;
         }
@@ -88,25 +100,27 @@
     for (const npc of (G.npcs || [])) {
       if (!G.npcNear(npc)) continue;
       const nx = G.npcWorldX(npc);
-      const ny = (npc.gy || 0) * G.STAGE_H + npc.y;
+      const floor = G.npcFloor(npc);
+      const drop = G.npcDrop(npc);
+      const rootY = floor - drop;
       if (npc.rig) {
         const r = npc.rig;
         setAng(r.torso, -90);
         setAng(r.head, 0);
         setAng(r.lArm, 15); setAng(r.lFore, 8);
         setAng(r.rArm, -15); setAng(r.rFore, -8);
-        setAng(r.lThigh, 88); setAng(r.lShin, 4);
-        setAng(r.rThigh, 92); setAng(r.rShin, -4);
-        G.pose(r.root, nx + 16, ny + 18, 0);
+        setAng(r.lThigh, 90); setAng(r.lShin, 0);
+        setAng(r.rThigh, 90); setAng(r.rShin, 0);
+        G.pose(r.root, nx + 16, rootY, 0);
         G.drawBone(ctx, r.root, npc.color || "#27ae60");
       } else {
         ctx.fillStyle = npc.color || "#27ae60";
-        ctx.fillRect(nx, ny, npc.w, npc.h);
+        ctx.fillRect(nx, rootY, npc.w, drop);
       }
       ctx.fillStyle = "#fff";
       ctx.font = "12px system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(npc.name, nx + 16, ny - 8);
+      ctx.fillText(npc.name, nx + 16, rootY - 28);
     }
     ctx.restore();
 
