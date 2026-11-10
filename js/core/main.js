@@ -18,7 +18,11 @@
   function hit(list, x, y) {
     for (let i = 0; i < list.length; i++) {
       const b = list[i];
-      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return i;
+      const bx = b.hitX != null ? b.hitX : b.x;
+      const by = b.hitY != null ? b.hitY : b.y;
+      const bw = b.hitW != null ? b.hitW : b.w;
+      const bh = b.hitH != null ? b.hitH : b.h;
+      if (x >= bx && x <= bx + bw && y >= by && y <= by + bh) return i;
     }
     return -1;
   }
