@@ -1,5 +1,4 @@
 (function (G) {
-  // Attack types: fire, water, ice, blunt, slashing, electric, poison, pierce, magic, earth
   G.ATTACK_TYPES = {
     fire:     { name: "Fire",     dmg: 1.2, color: "#e17055", effect: "burn" },
     water:    { name: "Water",    dmg: 1.0, color: "#0984e3", effect: "slow" },
@@ -13,7 +12,6 @@
     earth:    { name: "Earth",    dmg: 1.1, color: "#8d6e63", effect: "slow" }
   };
 
-  // Map enemy id / type to an attack type
   G.attackFor = function (e) {
     if (e.attack) return e.attack;
     const id = (e.id || e.name || "").toLowerCase();
@@ -35,16 +33,15 @@
   G.applyAttack = function (e, target) {
     const type = G.attackFor(e);
     const def = G.ATTACK_TYPES[type] || G.ATTACK_TYPES.blunt;
+    if (target) target.lastHit = type;
     const base = (e.dmg || 8) * def.dmg;
     if (target && !(G.flags && G.flags.shield > 0)) {
-      target.hp -= base * 0.08; // contact tick
+      target.hp -= base * 0.08;
     }
-    // Status
     if (def.effect && def.effect !== "none") {
       G.status[def.effect] = Math.max(G.status[def.effect] || 0, 90);
     }
-    // Particles colored by type
-    if (G.addParticle) {
+    if (G.addParticle && target) {
       for (let i = 0; i < 6; i++) {
         G.addParticle(target.x + 6, target.y + 10, (Math.random()-0.5)*4, -2, 20, def.color, 3);
       }
@@ -61,7 +58,6 @@
     if (G.status.slow > 0) G.status.slow--;
     if (G.status.stun > 0) G.status.stun--;
     if (G.status.shock > 0) G.status.shock--;
-    // Apply movement effects
     if (G.status.freeze > 0 || G.status.stun > 0) p.vx *= 0.1;
     else if (G.status.slow > 0) p.vx *= 0.6;
   };
