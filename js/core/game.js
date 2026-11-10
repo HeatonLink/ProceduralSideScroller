@@ -26,6 +26,11 @@
     document.getElementById("dead").classList.add("hidden");
   };
 
+  function pauseKey() {
+    if (G.actionJust) return G.actionJust("pause");
+    return G.justPressed("Escape");
+  }
+
   G.update = function () {
     if (G.state === "menu") {
       if (G.subState === "saves") { G.handleSaves(); return; }
@@ -47,18 +52,20 @@
       if (G.justPressed("ArrowDown") || G.justPressed("KeyS")) G.pauseIndex = (G.pauseIndex + 1) % G.PAUSE.length;
       if (G.justPressed("ArrowUp") || G.justPressed("KeyW")) G.pauseIndex = (G.pauseIndex - 1 + G.PAUSE.length) % G.PAUSE.length;
       if (G.justPressed("Enter") || G.justPressed("Space")) G.confirmPause();
-      if (G.justPressed("Escape")) G.state = "play";
+      if (pauseKey()) G.state = "play";
       return;
     }
     if (G.state !== "play") return;
-    if (G.justPressed("Escape")) { G.saveRun(); G.state = "pause"; G.pauseIndex = 0; G.subState = null; return; }
+    if (pauseKey()) { G.saveRun(); G.state = "pause"; G.pauseIndex = 0; G.subState = null; return; }
 
-    for (const fn of (G.updates || [])) fn();
+    if (G.runUpdates) G.runUpdates();
+    else for (const fn of (G.updates || [])) fn();
 
     const p = G.player;
     if (!p) return;
+    const reach = Math.max(16, p.w);
     for (const c of (G.coins || [])) {
-      if (!c.got && Math.abs(p.x + 18 - c.x) < 20 && Math.abs(p.y + 30 - c.y) < 30) {
+      if (!c.got && Math.abs(p.x + p.w / 2 - c.x) < reach && Math.abs(p.y + p.h / 2 - c.y) < reach + 10) {
         c.got = true;
         G.score += 10;
         G.addParticle(c.x, c.y, 0, -2, 30, "#ffd700", 5);
@@ -82,7 +89,8 @@
   };
 
   G.loop = function () {
-    G.update();
+    try { G.update(); }
+    catch (err) { console.warn("update crash", err); }
     if (G.ctx) {
       G.ctx.clearRect(0, 0, G.W, G.H);
       if (G.state === "menu") {
