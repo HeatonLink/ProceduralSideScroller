@@ -15,6 +15,7 @@
   G.currentGX = 0;
   G.currentGY = 0;
   G.FLOOR_Y = 480;
+  G.worldState = G.worldState || {};
 
   G.themeFor = function (gx, gy) {
     const dist = Math.abs(gx) + Math.abs(gy);
@@ -24,6 +25,13 @@
 
   G.cellOrigin = function (gx, gy) {
     return { x: gx * G.STAGE_W, y: gy * G.STAGE_H };
+  };
+
+  G.stateKey = G.stateKey || function (gx, gy, kind, i) {
+    return gx + "," + gy + "," + kind + "," + i;
+  };
+  G.stateFor = G.stateFor || function (gx, gy, kind, i) {
+    return G.worldState[G.stateKey(gx, gy, kind, i)];
   };
 
   G.makeGridLevel = function (gx, gy) {
@@ -42,11 +50,13 @@
     }
     const coins = [];
     for (let i = 0; i < 5; i++) {
-      coins.push({ x: 120 + i * 160, y: fy - 180 - (i % 3) * 40, got: false });
+      const st = G.stateFor(gx, gy, "coin", i);
+      coins.push({ x: 120 + i * 160, y: fy - 180 - (i % 3) * 40, got: !!(st && st.got), i: i });
     }
     const pits = [];
     if ((gx + gy) % 3 === 0) {
-      pits.push({ x: 400 + (Math.abs(gx) * 30 % 100), w: 80, platformIndex: 0, open: false });
+      const st = G.stateFor(gx, gy, "pit", 0);
+      pits.push({ x: 400 + (Math.abs(gx) * 30 % 100), w: 80, platformIndex: 0, open: !!(st && st.open), i: 0 });
     }
     const springs = [];
     if ((gx + gy) % 2 === 0) {
@@ -64,11 +74,13 @@
     const powerups = [];
     const count = 1 + Math.abs(gx + gy) % 3;
     for (let i = 0; i < count; i++) {
+      const st = G.stateFor(gx, gy, "power", i);
       powerups.push({
         x: 250 + i * 200,
         y: fy - 160 - i * 30,
         type: types[(Math.abs(gx) + i + Math.abs(gy)) % types.length],
-        got: false
+        got: !!(st && st.got),
+        i: i
       });
     }
     return {
@@ -136,17 +148,30 @@
     G.unloadFar();
   };
 
+  function cutFloor(plats, pit) {
+    const next = [];
+    for (const p of plats) {
+      if (!p.floor) { next.push(p); continue; }
+      const left = pit.x;
+      const right = pit.x + pit.w;
+      if (right <= p.x || left >= p.x + p.w) { next.push(p); continue; }
+      if (left > p.x) next.push(Object.assign({}, p, { w: left - p.x }));
+      if (right < p.x + p.w) next.push(Object.assign({}, p, { x: right, w: p.x + p.w - right }));
+    }
+    return next;
+  };
+
   G.rebuildActive = function () {
-    const plats = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
+    let plats = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
     for (const key in G.gridLevels) {
       const lvl = G.gridLevels[key];
       if (!lvl) continue;
       const ox = lvl.gx * G.STAGE_W;
       const oy = lvl.gy * G.STAGE_H;
+      let cellPlats = [];
       for (const p of (lvl.platforms || [])) {
-        // Overlap the cell edge so canvas rounding cannot open a seam.
         const extra = p.floor ? 4 : 0;
-        plats.push({
+        cellPlats.push({
           x: p.x + ox - extra,
           y: p.y + oy,
           w: p.w + extra * 2,
@@ -157,11 +182,17 @@
           ground: lvl.ground
         });
       }
-      for (const c of (lvl.coins || [])) {
-        coins.push({ x: c.x + ox, y: c.y + oy, got: c.got });
-      }
       for (const pit of (lvl.pits || [])) {
-        pits.push({ x: pit.x + ox, w: pit.w, open: pit.open, platformIndex: 0 });
+        const st = G.stateFor(lvl.gx, lvl.gy, "pit", pit.i || 0);
+        const open = pit.open || (st && st.open);
+        const world = { x: pit.x + ox, w: pit.w, open: open, i: pit.i || 0, gx: lvl.gx, gy: lvl.gy };
+        pits.push(world);
+        if (open) cellPlats = cutFloor(cellPlats, world);
+      }
+      plats = plats.concat(cellPlats);
+      for (const c of (lvl.coins || [])) {
+        const st = G.stateFor(lvl.gx, lvl.gy, "coin", c.i);
+        coins.push({ x: c.x + ox, y: c.y + oy, got: c.got || (st && st.got), i: c.i, gx: lvl.gx, gy: lvl.gy });
       }
       for (const s of (lvl.springs || [])) {
         springs.push({ x: s.x + ox, y: s.y + oy, w: s.w, h: s.h, anim: s.anim || 0 });
@@ -170,7 +201,11 @@
         surfaces.push({ x: s.x + ox, y: s.y + oy, w: s.w, h: s.h, type: s.type });
       }
       for (const pu of (lvl.powerups || [])) {
-        powerups.push({ x: pu.x + ox, y: pu.y + oy, type: pu.type, got: pu.got });
+        const st = G.stateFor(lvl.gx, lvl.gy, "power", pu.i);
+        powerups.push({
+          x: pu.x + ox, y: pu.y + oy, type: pu.type,
+          got: pu.got || (st && st.got), i: pu.i, gx: lvl.gx, gy: lvl.gy
+        });
       }
     }
     G.platforms = plats;
