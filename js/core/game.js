@@ -4,6 +4,7 @@
   G.player = null;
   G.canvas = null;
   G.ctx = null;
+  G.IFRAMES = 45;
 
   G.startGame = function (fromSave) {
     if (!fromSave) {
@@ -14,7 +15,7 @@
       G.status = { burn: 0, freeze: 0, poison: 0, slow: 0, stun: 0, bleed: 0, shock: 0 };
       if (G.loadGrid) G.loadGrid(0, 0);
       else if (G.loadLevel) G.loadLevel(0);
-      for (const e of (G.enemies || [])) { e.hp = e.hp || 40; e.x = e.home; }
+      for (const e of (G.enemies || [])) { e.hp = e.maxHp || e.hp || 40; e.x = e.home; }
       if (!G.activeSave) G.createSave();
     } else if (!G.player) {
       G.player = G.makePlayer();
@@ -38,6 +39,19 @@
     p.deathAnim = 0;
     G.state = "dead";
     document.getElementById("dead").classList.remove("hidden");
+  };
+
+  G.hurtPlayer = function (p, e) {
+    if (p.iFrames > 0) return;
+    if (G.flags && G.flags.shield > 0) return;
+    if (G.applyAttack) G.applyAttack(e, p);
+    else p.hp -= 8;
+    p.iFrames = G.IFRAMES;
+    p.knock = 12;
+    const dir = p.x < e.x ? -1 : 1;
+    p.vx = dir * 5;
+    p.vy = -6;
+    if (p.hp <= 0) G.killPlayer(p, p.lastHit);
   };
 
   G.update = function () {
@@ -89,9 +103,7 @@
     for (const e of (G.enemies || [])) {
       if (e.hp <= 0) continue;
       if (G.overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: e.x, y: e.y, w: e.w, h: e.h })) {
-        if (G.applyAttack) G.applyAttack(e, p);
-        else if (!(G.flags && G.flags.shield > 0)) p.hp -= 0.5;
-        if (p.hp <= 0) G.killPlayer(p, p.lastHit);
+        G.hurtPlayer(p, e);
       }
     }
     G.updateCamera(p.x);
