@@ -2,12 +2,14 @@
   G.pauseIndex = 0;
   G.PAUSE = [
     { id: "resume", label: "Resume" },
+    { id: "inventory", label: "Inventory" },
+    { id: "map", label: "Map" },
     { id: "options", label: "Options" },
     { id: "quit", label: "Quit to Menu" }
   ];
 
   G.pauseButtons = function () {
-    const bw = 280, bh = 44, gap = 12, startY = 280;
+    const bw = 280, bh = 44, gap = 12, startY = 220;
     return G.PAUSE.map((item, i) => ({
       ...item,
       x: (G.W - bw) / 2,
@@ -18,12 +20,20 @@
   };
 
   G.drawPause = function (ctx) {
+    if (G.subState === "inventory" && G.drawInventory) {
+      G.drawInventory(ctx);
+      return;
+    }
+    if (G.subState === "map" && G.drawMap) {
+      G.drawMap(ctx);
+      return;
+    }
     ctx.fillStyle = "rgba(8,12,24,0.65)";
     ctx.fillRect(0, 0, G.W, G.H);
     ctx.textAlign = "center";
     ctx.fillStyle = "#f4f7ff";
     ctx.font = "bold 42px system-ui, sans-serif";
-    ctx.fillText("PAUSED", G.W / 2, 200);
+    ctx.fillText("PAUSED", G.W / 2, 160);
 
     G.pauseButtons().forEach((b, i) => {
       const on = i === G.pauseIndex;
@@ -47,6 +57,8 @@
   G.confirmPause = function () {
     const id = G.PAUSE[G.pauseIndex].id;
     if (id === "resume") G.state = "play";
+    else if (id === "inventory") G.subState = "inventory";
+    else if (id === "map") G.subState = "map";
     else if (id === "options") G.subState = "options";
     else if (id === "quit") {
       G.saveRun();
