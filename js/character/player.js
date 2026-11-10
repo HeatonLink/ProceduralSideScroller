@@ -138,8 +138,9 @@
     G.drawBone(ctx, player.rig.root, col);
     const h = player.rig.head;
     if (h) {
-      const hx = h.x + Math.cos(h.ang * Math.PI / 180) * h.len;
-      const hy = h.y + Math.sin(h.ang * Math.PI / 180) * h.len;
+      const a = h.world != null ? h.world : h.ang;
+      const hx = h.x + Math.cos(a * Math.PI / 180) * h.len;
+      const hy = h.y + Math.sin(a * Math.PI / 180) * h.len;
       ctx.fillStyle = "#a1887f";
       ctx.beginPath();
       ctx.arc(hx, hy - 2, 8, 0, Math.PI * 2);
