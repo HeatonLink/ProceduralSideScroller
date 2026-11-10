@@ -28,6 +28,10 @@
       G.drawMap(ctx);
       return;
     }
+    if ((G.subState === "options" || G.subState === "binds" || G.subState === "display") && G.drawOptions) {
+      G.drawOptions(ctx);
+      return;
+    }
     ctx.fillStyle = "rgba(8,12,24,0.65)";
     ctx.fillRect(0, 0, G.W, G.H);
     ctx.textAlign = "center";
@@ -59,7 +63,10 @@
     if (id === "resume") G.state = "play";
     else if (id === "inventory") G.subState = "inventory";
     else if (id === "map") G.subState = "map";
-    else if (id === "options") G.subState = "options";
+    else if (id === "options") {
+      G.subState = "options";
+      G.optIndex = 0;
+    }
     else if (id === "quit") {
       G.saveRun();
       G.state = "menu";
