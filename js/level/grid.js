@@ -81,6 +81,8 @@
       });
     }
     if (G.addShapes) G.addShapes(platforms, gx, gy, fy, dust);
+    const obstacles = [];
+    if (G.addObstacles) G.addObstacles(obstacles, gx, gy, fy);
     const coins = [];
     for (let i = 0; i < 5; i++) {
       const st = G.stateFor(gx, gy, "coin", i);
@@ -124,6 +126,7 @@
       w: G.STAGE_W,
       h: G.STAGE_H,
       platforms: platforms,
+      obstacles: obstacles,
       coins: coins,
       pits: pits,
       springs: springs,
@@ -153,6 +156,7 @@
     const lvl = G.gridLevels[key];
     if (!lvl) return;
     lvl.platforms = null;
+    lvl.obstacles = null;
     lvl.coins = null;
     lvl.pits = null;
     lvl.springs = null;
@@ -200,7 +204,7 @@
   }
 
   G.rebuildActive = function () {
-    let plats = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
+    let plats = [], obs = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
     for (const key in G.gridLevels) {
       const lvl = G.gridLevels[key];
       if (!lvl) continue;
@@ -223,6 +227,12 @@
           y1: p.y1 != null ? p.y1 + oy : null,
           baseX: p.baseX != null ? p.baseX + ox : null,
           range: p.range
+        });
+      }
+      for (const o of (lvl.obstacles || [])) {
+        obs.push({
+          type: o.type, x: o.x + ox, y: o.y + oy, baseY: o.y + oy,
+          w: o.w, h: o.h, dmg: o.dmg, t: 0
         });
       }
       for (const pit of (lvl.pits || [])) {
@@ -255,6 +265,7 @@
       }
     }
     G.platforms = plats;
+    G.obstacles = obs;
     if (G.fillDust) G.fillDust(G.platforms);
     G.coins = coins;
     G.pits = pits;
