@@ -4,13 +4,12 @@
   G.MAX_SAVES = 10;
   G.saveBank = { lastPlayed: 0, slots: {} };
   G.activeSave = 0;
-  G.enemyState = {}; // efficient world-wide: key "gx,gy,id" -> { hp, x, dead }
+  G.enemyState = {};
   G.autoSaveTimer = 0;
   G.saving = false;
 
   G.loadBank = function () {
     try {
-      // Prefer finished save; fall back to temp only if main is missing
       let raw = localStorage.getItem(G.SAVES_KEY);
       if (!raw) raw = localStorage.getItem(G.SAVES_TMP);
       if (!raw) return;
@@ -19,7 +18,6 @@
     } catch (e) {}
   };
 
-  // Atomic write: write temp first, then replace main. Old data stays until the write finishes.
   G.writeBank = function () {
     if (G.saving) return;
     G.saving = true;
@@ -64,7 +62,6 @@
 
   function snapshot() {
     const p = G.player || {};
-    // Compact enemy state: only store non-default (dead or moved)
     const compact = {};
     for (const k in G.enemyState) {
       const st = G.enemyState[k];
@@ -76,7 +73,7 @@
       gx: G.currentGX || 0,
       gy: G.currentGY || 0,
       x: p.x || 80,
-      y: p.y || 500,
+      y: p.y || 432,
       hp: p.hp || G.MAX_HP,
       facing: p.facing || 1,
       flags: G.flags || {},
@@ -98,7 +95,7 @@
     else if (G.loadLevel) G.loadLevel(data.level || 0);
     const p = G.player || G.makePlayer();
     p.x = data.x || 80;
-    p.y = data.y || 500;
+    p.y = data.y || 432;
     p.hp = data.hp || G.MAX_HP;
     p.facing = data.facing || 1;
     G.player = p;
@@ -108,7 +105,6 @@
 
   G.saveRun = function () {
     if (!G.activeSave) return;
-    // Record current cell enemies before snapshot
     for (const e of (G.enemies || [])) G.recordEnemy(e);
     const snap = snapshot();
     snap.id = G.activeSave;
@@ -133,6 +129,7 @@
     return true;
   };
 
+  // Do not clear G.player. startGame creates the player, then calls this.
   G.createSave = function () {
     const id = G.nextEmptySlot();
     if (!id) return 0;
@@ -142,7 +139,6 @@
     G.inventory = {};
     G.visited = {};
     G.enemyState = {};
-    G.player = null;
     G.saveRun();
     return id;
   };
@@ -157,11 +153,10 @@
     G.writeBank();
   };
 
-  // Auto-save every 5 seconds while playing
   G.addUpdate(function () {
     if (G.state !== "play") return;
     G.autoSaveTimer++;
-    if (G.autoSaveTimer >= 300) { // ~5s at 60fps
+    if (G.autoSaveTimer >= 300) {
       G.autoSaveTimer = 0;
       G.autoSave();
     }
