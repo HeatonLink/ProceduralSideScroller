@@ -22,6 +22,10 @@
     return G.THEMES[band % G.THEMES.length];
   };
 
+  G.cellOrigin = function (gx, gy) {
+    return { x: gx * G.STAGE_W, y: gy * G.STAGE_H };
+  };
+
   G.makeGridLevel = function (gx, gy) {
     const theme = G.themeFor(gx, gy);
     const fy = G.FLOOR_Y;
@@ -132,20 +136,50 @@
     G.unloadFar();
   };
 
+  // Copy loaded cells into world space so the player can walk across them.
+  G.rebuildActive = function () {
+    const plats = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
+    for (const key in G.gridLevels) {
+      const lvl = G.gridLevels[key];
+      if (!lvl) continue;
+      const ox = lvl.gx * G.STAGE_W;
+      const oy = lvl.gy * G.STAGE_H;
+      for (const p of (lvl.platforms || [])) {
+        plats.push({ x: p.x + ox, y: p.y + oy, w: p.w, h: p.h, dust: p.dust });
+      }
+      for (const c of (lvl.coins || [])) {
+        coins.push({ x: c.x + ox, y: c.y + oy, got: c.got });
+      }
+      for (const pit of (lvl.pits || [])) {
+        pits.push({ x: pit.x + ox, w: pit.w, open: pit.open, platformIndex: 0 });
+      }
+      for (const s of (lvl.springs || [])) {
+        springs.push({ x: s.x + ox, y: s.y + oy, w: s.w, h: s.h, anim: s.anim || 0 });
+      }
+      for (const s of (lvl.surfaces || [])) {
+        surfaces.push({ x: s.x + ox, y: s.y + oy, w: s.w, h: s.h, type: s.type });
+      }
+      for (const pu of (lvl.powerups || [])) {
+        powerups.push({ x: pu.x + ox, y: pu.y + oy, type: pu.type, got: pu.got });
+      }
+    }
+    G.platforms = plats;
+    if (G.fillDust) G.fillDust(G.platforms);
+    G.coins = coins;
+    G.pits = pits;
+    G.springs = springs;
+    G.surfaces = surfaces;
+    G.powerups = powerups;
+  };
+
   G.loadGrid = function (gx, gy) {
     G.currentGX = gx;
     G.currentGY = gy;
     if (G.markVisited) G.markVisited(gx, gy);
     G.loadWindow();
+    G.rebuildActive();
     const lvl = G.gridLevels[gx + "," + gy];
     if (!lvl) return;
-    G.platforms = lvl.platforms;
-    if (G.fillDust) G.fillDust(G.platforms);
-    G.coins = lvl.coins;
-    G.pits = lvl.pits || [];
-    G.springs = lvl.springs || [];
-    G.surfaces = lvl.surfaces || [];
-    G.powerups = lvl.powerups || [];
     G.stageW = lvl.w;
     G.stageH = lvl.h;
     G.levels = Object.keys(G.gridLevels).map(k => G.gridLevels[k]);
@@ -154,28 +188,17 @@
 
   G.loadGrid(0, 0);
 
+  // Track the cell the player is in. Do not move the player.
   G.addUpdate(function () {
     const p = G.player;
     if (!p || G.state !== "play") return;
-    let changed = false;
-    if (p.x > G.STAGE_W - 20) {
-      G.loadGrid(G.currentGX + 1, G.currentGY);
-      p.x = 20;
-      changed = true;
-    } else if (p.x < 10) {
-      G.loadGrid(G.currentGX - 1, G.currentGY);
-      p.x = G.STAGE_W - 30;
-      changed = true;
-    }
-    if (p.y < 10) {
-      G.loadGrid(G.currentGX, G.currentGY - 1);
-      p.y = G.FLOOR_Y - 40;
-      changed = true;
-    } else if (p.y > G.STAGE_H - 10) {
-      G.loadGrid(G.currentGX, G.currentGY + 1);
-      p.y = 40;
-      changed = true;
-    }
-    if (changed) G.loadWindow();
+    const gx = Math.floor(p.x / G.STAGE_W);
+    const gy = Math.floor(p.y / G.STAGE_H);
+    if (gx === G.currentGX && gy === G.currentGY) return;
+    G.currentGX = gx;
+    G.currentGY = gy;
+    if (G.markVisited) G.markVisited(gx, gy);
+    G.loadWindow();
+    G.rebuildActive();
   });
 })(G);
