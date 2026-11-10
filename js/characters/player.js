@@ -1,7 +1,6 @@
 (function (G) {
-  // Mouse-shaped player. Scale kept small but large enough to see.
   G.rigMakers.player = function (scale) {
-    scale = (scale || 1) * 0.55;
+    scale = (scale || 1) * 0.7;
     const root = new G.Bone(0, 0);
     const torso = root.add(new G.Bone(18 * scale, 10 * scale));
     const head = torso.add(new G.Bone(10 * scale, 14 * scale));
