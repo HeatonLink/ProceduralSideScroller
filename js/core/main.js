@@ -33,16 +33,16 @@
       }
       return;
     }
-    if (G.state === "pause") {
-      if (G.subState) {
-        G.subState = null;
-        return;
-      }
-      const i = hit(G.pauseButtons(), p.x, p.y);
-      if (i >= 0) {
-        G.pauseIndex = i;
-        G.confirmPause();
-      }
+    if (G.state !== "pause") return;
+    if (G.subState === "inventory" || G.subState === "map") {
+      G.subState = null;
+      return;
+    }
+    if (G.subState) return;
+    const i = hit(G.pauseButtons(), p.x, p.y);
+    if (i >= 0) {
+      G.pauseIndex = i;
+      G.confirmPause();
     }
   });
 
