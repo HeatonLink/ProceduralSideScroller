@@ -38,7 +38,6 @@
     return G.worldState[G.stateKey(gx, gy, kind, i)];
   };
 
-  // Cross of 2, plus the four adjacent diagonals.
   G.inLoadShape = function (gx, gy) {
     const dx = Math.abs(gx - G.currentGX);
     const dy = Math.abs(gy - G.currentGY);
@@ -182,18 +181,21 @@
     G.unloadFar();
   };
 
+  // Cut every platform that crosses an open pit, including the 4px cell overlap.
   function cutFloor(plats, pit) {
+    const pad = 8;
+    const left = pit.x - pad;
+    const right = pit.x + pit.w + pad;
+    const top = pit.y;
     const next = [];
     for (const p of plats) {
-      if (!p.floor) { next.push(p); continue; }
-      const left = pit.x;
-      const right = pit.x + pit.w;
+      if (p.y > top + 8 || p.y + p.h < top) { next.push(p); continue; }
       if (right <= p.x || left >= p.x + p.w) { next.push(p); continue; }
       if (left > p.x) next.push(Object.assign({}, p, { w: left - p.x }));
       if (right < p.x + p.w) next.push(Object.assign({}, p, { x: right, w: p.x + p.w - right }));
     }
     return next;
-  };
+  }
 
   G.rebuildActive = function () {
     let plats = [], coins = [], pits = [], springs = [], surfaces = [], powerups = [];
@@ -219,7 +221,10 @@
       for (const pit of (lvl.pits || [])) {
         const st = G.stateFor(lvl.gx, lvl.gy, "pit", pit.i || 0);
         const open = pit.open || (st && st.open);
-        const world = { x: pit.x + ox, w: pit.w, open: open, i: pit.i || 0, gx: lvl.gx, gy: lvl.gy };
+        const world = {
+          x: pit.x + ox, y: pit.y != null ? pit.y + oy : (G.FLOOR_Y || 480) + oy,
+          w: pit.w, open: open, i: pit.i || 0, gx: lvl.gx, gy: lvl.gy
+        };
         pits.push(world);
         if (open) cellPlats = cutFloor(cellPlats, world);
       }
