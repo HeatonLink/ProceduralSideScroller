@@ -16,7 +16,7 @@
 
   G.addDraw("fx", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, 0);
+    ctx.translate(-G.camX, -G.camY);
     for (const p of G.particles) {
       ctx.globalAlpha = p.life / p.max;
       ctx.fillStyle = p.color;
