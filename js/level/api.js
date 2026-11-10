@@ -31,21 +31,23 @@
   };
 
   G.onGround = function (px, py, pw, ph) {
-    const feet = { x: px + 4, y: py + ph - 2, w: pw - 8, h: 6 };
+    const feet = { x: px + 4, y: py + ph - 2, w: pw - 8, h: 8 };
+    const cx = px + pw / 2;
     for (const p of (G.platforms || [])) {
-      if (G.overlap(feet, p)) {
-        G.groundPlat = p;
-        return p.y;
-      }
+      if (!G.overlap(feet, p)) continue;
+      const top = G.surfaceY ? G.surfaceY(p, cx) : p.y;
+      if (py + ph > top + 10) continue;
+      G.groundPlat = p;
+      return top;
     }
     G.groundPlat = null;
     return null;
   };
 
-  // Bottom of a platform the head is hitting while moving up. Null if clear.
   G.hitCeiling = function (px, py, pw, ph) {
     const head = { x: px + 4, y: py, w: pw - 8, h: 6 };
     for (const p of (G.platforms || [])) {
+      if (p.shape === "ramp") continue;
       if (!G.overlap(head, p)) continue;
       if (py < p.y + p.h && py + ph > p.y + p.h) return p.y + p.h;
     }
