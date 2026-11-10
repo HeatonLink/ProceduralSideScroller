@@ -5,13 +5,14 @@
 
   G.spawnNpcs = function () {
     G.npcs = [];
+    const fy = G.FLOOR_Y || 480;
     for (const def of (G.NPC_DEFS || [])) {
       const npc = Object.assign({}, G.NPC_DEFAULT, def);
       npc.gx = def.gx;
       npc.gy = def.gy;
       npc.homeX = def.x;
       npc.x = def.x;
-      npc.y = 820;
+      npc.y = fy - 40;
       if (!npc.rig && G.makeRig) npc.rig = G.makeRig("npc", npc.scale);
       const moved = G.flags["moved_" + npc.id];
       if (moved) {
