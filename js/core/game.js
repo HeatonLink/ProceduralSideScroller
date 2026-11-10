@@ -24,12 +24,14 @@
     }
     const floor = G.FLOOR_Y || 480;
     if (G.player) {
-      G.player.x = 200;
-      G.player.y = floor - (G.player.h || 40);
+      G.player.x = 80;
+      G.player.y = floor - (G.player.h || 48);
       G.player.vx = 0;
       G.player.vy = 0;
     }
     G.particles = [];
+    G.camX = 0;
+    G.camY = Math.max(0, floor - G.PLAY_H + 80);
     if (G.player && G.updateCamera) G.updateCamera(G.player.x, G.player.y, true);
     G.state = "play";
     G.subState = null;
