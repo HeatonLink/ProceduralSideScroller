@@ -15,8 +15,9 @@
       G.status = { burn: 0, freeze: 0, poison: 0, slow: 0, stun: 0, bleed: 0, shock: 0 };
       for (const e of (G.enemies || [])) { e.hp = e.maxHp || e.hp || 40; e.x = e.home; }
       if (!G.activeSave && G.createSave) G.createSave();
+      G.gridLevels = Object.create(null);
     }
-    if (G.loadGrid) G.loadGrid(0, 0);
+    if (G.loadGrid) G.loadGrid(fromSave ? (G.currentGX || 0) : 0, fromSave ? (G.currentGY || 0) : 0);
     if (!G.player) G.player = G.makePlayer();
     if (!G.platforms || !G.platforms.length) {
       G.platforms = [{ x: 0, y: G.FLOOR_Y || 480, w: 1000, h: 120 }];
