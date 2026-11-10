@@ -5,6 +5,7 @@
   G.saveBank = { lastPlayed: 0, slots: {} };
   G.activeSave = 0;
   G.enemyState = {};
+  G.worldState = G.worldState || {};
   G.autoSaveTimer = 0;
   G.saving = false;
 
@@ -45,6 +46,22 @@
     return 0;
   };
 
+  G.stateKey = function (gx, gy, kind, i) {
+    return gx + "," + gy + "," + kind + "," + i;
+  };
+
+  G.stateFor = function (gx, gy, kind, i) {
+    return G.worldState[G.stateKey(gx, gy, kind, i)];
+  };
+
+  G.markState = function (gx, gy, kind, i, data) {
+    G.worldState[G.stateKey(gx, gy, kind, i)] = data;
+    const lvl = G.gridLevels && G.gridLevels[gx + "," + gy];
+    if (!lvl) return;
+    const list = kind === "coin" ? lvl.coins : kind === "pit" ? lvl.pits : lvl.powerups;
+    if (list && list[i]) Object.assign(list[i], data);
+  };
+
   G.recordEnemy = function (e) {
     if (!e || e.id == null) return;
     const key = (e.gx || G.currentGX || 0) + "," + (e.gy || G.currentGY || 0) + "," + e.id;
@@ -80,6 +97,7 @@
       inventory: G.inventory || {},
       visited: G.visited || {},
       enemies: compact,
+      world: G.worldState || {},
       updated: Date.now()
     };
   }
@@ -91,8 +109,10 @@
     G.inventory = data.inventory || {};
     G.visited = data.visited || {};
     G.enemyState = data.enemies || {};
+    G.worldState = data.world || {};
     if (G.loadGrid) G.loadGrid(data.gx || 0, data.gy || 0);
     else if (G.loadLevel) G.loadLevel(data.level || 0);
+    if (G.rebuildActive) G.rebuildActive();
     const p = G.player || G.makePlayer();
     p.x = data.x || 80;
     p.y = data.y || 432;
@@ -129,7 +149,6 @@
     return true;
   };
 
-  // Do not clear G.player. startGame creates the player, then calls this.
   G.createSave = function () {
     const id = G.nextEmptySlot();
     if (!id) return 0;
@@ -139,6 +158,7 @@
     G.inventory = {};
     G.visited = {};
     G.enemyState = {};
+    G.worldState = {};
     G.saveRun();
     return id;
   };
