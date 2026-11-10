@@ -98,6 +98,10 @@
       visited: G.visited || {},
       enemies: compact,
       world: G.worldState || {},
+      originGX: G.originGX || 0,
+      originGY: G.originGY || 0,
+      respawnGX: G.respawnGX || 0,
+      respawnGY: G.respawnGY || 0,
       updated: Date.now()
     };
   }
@@ -110,6 +114,10 @@
     G.visited = data.visited || {};
     G.enemyState = data.enemies || {};
     G.worldState = data.world || {};
+    G.originGX = data.originGX || 0;
+    G.originGY = data.originGY || 0;
+    G.respawnGX = data.respawnGX != null ? data.respawnGX : G.originGX;
+    G.respawnGY = data.respawnGY != null ? data.respawnGY : G.originGY;
     G.gridLevels = Object.create(null);
     if (G.loadGrid) G.loadGrid(data.gx || 0, data.gy || 0);
     else if (G.loadLevel) G.loadLevel(data.level || 0);
