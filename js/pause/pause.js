@@ -70,6 +70,7 @@
     else if (id === "map") G.subState = "map";
     else if (id === "options") {
       G.subState = "options";
+      G.optTab = "video";
       G.optIndex = 0;
     }
     else if (id === "quit") {
