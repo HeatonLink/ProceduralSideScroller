@@ -21,6 +21,8 @@
       G.player = G.makePlayer();
     }
     G.camX = 0;
+    G.camY = 0;
+    if (G.player && G.updateCamera) G.updateCamera(G.player.x, G.player.y);
     G.particles = [];
     G.state = "play";
     G.subState = null;
@@ -106,7 +108,7 @@
         G.hurtPlayer(p, e);
       }
     }
-    G.updateCamera(p.x);
+    G.updateCamera(p.x, p.y);
     G.updateParticles();
     document.getElementById("hp").textContent = Math.max(0, Math.floor(p.hp));
     document.getElementById("score").textContent = G.score;
