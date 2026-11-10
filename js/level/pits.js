@@ -8,19 +8,10 @@
   G.openPit = function (pit) {
     if (pit.open) return;
     pit.open = true;
-    const plats = G.platforms || [];
-    const ground = plats[pit.platformIndex];
-    if (!ground) return;
-    const leftW = Math.max(0, pit.x - ground.x);
-    const rightX = pit.x + pit.w;
-    const rightW = Math.max(0, (ground.x + ground.w) - rightX);
-    const y = ground.y;
-    const h = ground.h;
-    plats.splice(pit.platformIndex, 1);
-    if (leftW > 8) plats.unshift({ x: ground.x, y, w: leftW, h });
-    if (rightW > 8) plats.push({ x: rightX, y, w: rightW, h });
+    if (G.markState && pit.gx != null) G.markState(pit.gx, pit.gy, "pit", pit.i || 0, { open: true });
+    if (G.rebuildActive) G.rebuildActive();
     for (let i = 0; i < 12; i++) {
-      G.addParticle(pit.x + Math.random() * pit.w, y, (Math.random() - 0.5) * 4, -2, 30, "#8d6e63", 4);
+      G.addParticle(pit.x + Math.random() * pit.w, G.FLOOR_Y || 480, (Math.random() - 0.5) * 4, -2, 30, "#8d6e63", 4);
     }
   };
 
@@ -37,20 +28,20 @@
 
   G.addDraw("world", function (ctx) {
     ctx.save();
-    ctx.translate(-G.camX, -G.camY);
-    const fy = G.FLOOR_Y || 480;
+    ctx.translate(-Math.round(G.camX), -Math.round(G.camY));
     for (const pit of G.pits) {
+      const y = G.FLOOR_Y || 480;
       if (!pit.open) {
         ctx.strokeStyle = "rgba(0,0,0,0.3)";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(pit.x, fy);
-        ctx.lineTo(pit.x + pit.w / 2, fy + 10);
-        ctx.lineTo(pit.x + pit.w, fy);
+        ctx.moveTo(pit.x, y);
+        ctx.lineTo(pit.x + pit.w / 2, y + 10);
+        ctx.lineTo(pit.x + pit.w, y);
         ctx.stroke();
       } else {
         ctx.fillStyle = "#1a1a1a";
-        ctx.fillRect(pit.x, fy, pit.w, 120);
+        ctx.fillRect(pit.x, y, pit.w, 120);
       }
     }
     ctx.restore();
