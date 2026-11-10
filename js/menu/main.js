@@ -54,12 +54,14 @@
     const id = G.MENU[G.menuIndex].id;
     if (id === "play") G.startGame();
     else if (id === "saves") { G.subState = "saves"; G.saveIndex = 0; }
+    else if (id === "options") { G.subState = "options"; G.optIndex = 0; }
     else G.subState = id;
   };
 
   G.drawSub = function (ctx) {
     if (!G.subState) return;
     if (G.subState === "saves") { G.drawSaves(ctx); return; }
+    if (G.subState === "options" || G.subState === "binds") { G.drawOptions(ctx); return; }
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, G.W, G.H);
     ctx.fillStyle = "#fff";
