@@ -29,6 +29,7 @@
   G.update = function () {
     if (G.state === "menu") {
       if (G.subState === "saves") { G.handleSaves(); return; }
+      if (G.subState === "options" || G.subState === "binds") { G.handleOptions(); return; }
       if (G.justPressed("ArrowDown") || G.justPressed("KeyS")) G.menuIndex = (G.menuIndex + 1) % G.MENU.length;
       if (G.justPressed("ArrowUp") || G.justPressed("KeyW")) G.menuIndex = (G.menuIndex - 1 + G.MENU.length) % G.MENU.length;
       if (G.justPressed("Enter") || G.justPressed("Space")) G.confirmMenu();
